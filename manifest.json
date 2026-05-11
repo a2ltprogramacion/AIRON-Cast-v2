@@ -1,0 +1,316 @@
+{
+    "_meta": {
+        "framework": "AIRON-Cast",
+        "version": "1.0.0",
+        "description": "Contratos de capacidades y restricciones por agente. Ningún agente opera fuera de su jurisdicción definida aquí.",
+        "schema_version": "1"
+    },
+    "agents": {
+        "strategist": {
+            "description": "Análisis inicial del proyecto. Genera el blueprint, define tareas y las registra en la DB.",
+            "circle": 1,
+            "can_read": [
+                "specs/",
+                "core/airon.sqlite",
+                "rules/",
+                "AGENTS.md"
+            ],
+            "can_write": [
+                "core/airon.sqlite:projects",
+                "core/airon.sqlite:tasks",
+                "core/airon.sqlite:checkpoints",
+                "core/airon.sqlite:execution_logs",
+                "output/[proyecto]/state.json",
+                "output/[proyecto]/spec.md"
+            ],
+            "can_call_mcps": [
+                "context7",
+                "notebooklm"
+            ],
+            "can_escalate_to": [
+                "orchestrator"
+            ],
+            "forbidden": [
+                "Escribir en output/[proyecto]/src/",
+                "Modificar tareas de otro proyecto",
+                "Llamar a StitchMCP",
+                "Escalar a claude-opus sin RFC aprobado"
+            ],
+            "output_schema": {
+                "blueprint": {
+                    "project_slug": "string",
+                    "workflow": "string",
+                    "tasks": [
+                        {
+                            "title": "string",
+                            "assigned_agent": "string",
+                            "priority": "integer 1-10",
+                            "dependencies": "array of task titles"
+                        }
+                    ]
+                }
+            }
+        },
+        "orchestrator": {
+            "description": "Control táctico del flujo. Mueve tareas entre estados, asigna agentes y monitorea el avance.",
+            "circle": 2,
+            "can_read": [
+                "core/airon.sqlite",
+                "output/[proyecto]/state.json",
+                "agents/",
+                "workflows/",
+                "rules/"
+            ],
+            "can_write": [
+                "core/airon.sqlite:tasks",
+                "core/airon.sqlite:checkpoints",
+                "core/airon.sqlite:execution_logs",
+                "output/[proyecto]/state.json"
+            ],
+            "can_call_mcps": [
+                "notebooklm"
+            ],
+            "can_escalate_to": [
+                "strategist",
+                "hitl"
+            ],
+            "forbidden": [
+                "Escribir código fuente en src/",
+                "Crear o eliminar proyectos",
+                "Modificar el schema de airon.sqlite",
+                "Cambiar prioridad de tareas sin aprobación del operador"
+            ],
+            "output_schema": {
+                "task_transition": {
+                    "task_id": "integer",
+                    "from_status": "string",
+                    "to_status": "string",
+                    "reason": "string",
+                    "next_agent": "string"
+                }
+            }
+        },
+        "taskforce": {
+            "frontend": {
+                "description": "Desarrollo de interfaces: HTML, CSS, JS, frameworks frontend, componentes UI.",
+                "model": "gemini-flash",
+                "circle": 3,
+                "can_read": [
+                    "output/[proyecto]/spec.md",
+                    "output/[proyecto]/state.json",
+                    "output/[proyecto]/src/",
+                    "skills/memory/SKILL.md",
+                    "skills/context7/SKILL.md",
+                    "skills/notebooklm/SKILL.md"
+                ],
+                "can_write": [
+                    "output/[proyecto]/src/",
+                    "output/[proyecto]/docs/frontend.md",
+                    "core/airon.sqlite:artifacts",
+                    "core/airon.sqlite:execution_logs",
+                    "core/airon.sqlite:checkpoints"
+                ],
+                "can_call_mcps": [
+                    "context7",
+                    "notebooklm",
+                    "StitchMCP"
+                ],
+                "can_escalate_to": [
+                    "orchestrator"
+                ],
+                "forbidden": [
+                    "Modificar archivos de backend sin tarea asignada",
+                    "Escribir en core/ o rules/",
+                    "Omitir registro de artefacto en artifacts"
+                ],
+                "output_schema": {
+                    "artifact": {
+                        "file_path": "string (ruta relativa desde output/[proyecto]/)",
+                        "file_type": "source | asset | config",
+                        "checksum": "string SHA256",
+                        "description": "string"
+                    }
+                }
+            },
+            "backend": {
+                "description": "Desarrollo de lógica de servidor: APIs, modelos de datos, autenticación, integraciones.",
+                "model": "gemini-flash",
+                "circle": 3,
+                "can_read": [
+                    "output/[proyecto]/spec.md",
+                    "output/[proyecto]/state.json",
+                    "output/[proyecto]/src/",
+                    "skills/memory/SKILL.md",
+                    "skills/context7/SKILL.md",
+                    "skills/notebooklm/SKILL.md"
+                ],
+                "can_write": [
+                    "output/[proyecto]/src/",
+                    "output/[proyecto]/docs/backend.md",
+                    "core/airon.sqlite:artifacts",
+                    "core/airon.sqlite:execution_logs",
+                    "core/airon.sqlite:checkpoints"
+                ],
+                "can_call_mcps": [
+                    "context7",
+                    "notebooklm"
+                ],
+                "can_escalate_to": [
+                    "orchestrator"
+                ],
+                "forbidden": [
+                    "Modificar archivos de frontend sin tarea asignada",
+                    "Escribir en core/ o rules/",
+                    "Omitir registro de artefacto en artifacts",
+                    "Exponer credenciales o API keys en código fuente"
+                ],
+                "output_schema": {
+                    "artifact": {
+                        "file_path": "string",
+                        "file_type": "source | config | migration",
+                        "checksum": "string SHA256",
+                        "description": "string"
+                    }
+                }
+            },
+            "ux": {
+                "description": "Revisión de experiencia de usuario: flujos, usabilidad, consistencia visual y accesibilidad.",
+                "model": "gemini-flash",
+                "circle": 3,
+                "can_read": [
+                    "output/[proyecto]/src/",
+                    "output/[proyecto]/spec.md",
+                    "output/[proyecto]/state.json",
+                    "skills/notebooklm/SKILL.md"
+                ],
+                "can_write": [
+                    "output/[proyecto]/docs/ux-review.md",
+                    "core/airon.sqlite:tasks",
+                    "core/airon.sqlite:execution_logs",
+                    "core/airon.sqlite:checkpoints"
+                ],
+                "can_call_mcps": [
+                    "notebooklm",
+                    "StitchMCP"
+                ],
+                "can_escalate_to": [
+                    "orchestrator"
+                ],
+                "forbidden": [
+                    "Modificar código fuente directamente",
+                    "Crear nuevas tareas sin pasar por orchestrator",
+                    "Aprobar su propia revisión"
+                ],
+                "output_schema": {
+                    "ux_report": {
+                        "passed": "boolean",
+                        "issues": [
+                            {
+                                "severity": "low | medium | high | critical",
+                                "component": "string",
+                                "description": "string",
+                                "suggested_fix": "string"
+                            }
+                        ],
+                        "approved_for_next": "boolean"
+                    }
+                }
+            },
+            "qa": {
+                "description": "Validación técnica: tests, revisión de código, verificación de checksum de artefactos.",
+                "model": "claude-sonnet",
+                "circle": 3,
+                "can_read": [
+                    "output/[proyecto]/src/",
+                    "output/[proyecto]/docs/",
+                    "output/[proyecto]/spec.md",
+                    "core/airon.sqlite:artifacts",
+                    "core/airon.sqlite:tasks",
+                    "skills/memory/SKILL.md"
+                ],
+                "can_write": [
+                    "output/[proyecto]/docs/qa-report.md",
+                    "core/airon.sqlite:artifacts",
+                    "core/airon.sqlite:execution_logs",
+                    "core/airon.sqlite:checkpoints"
+                ],
+                "can_call_mcps": [
+                    "notebooklm"
+                ],
+                "can_escalate_to": [
+                    "orchestrator",
+                    "hitl"
+                ],
+                "forbidden": [
+                    "Modificar código fuente que está evaluando",
+                    "Marcar tarea como COMPLETED si hay issues críticos sin resolver",
+                    "Omitir verificación de checksum en artefactos"
+                ],
+                "output_schema": {
+                    "qa_report": {
+                        "passed": "boolean",
+                        "artifacts_verified": "integer",
+                        "artifacts_failed": "integer",
+                        "issues": [
+                            {
+                                "severity": "low | medium | high | critical",
+                                "file": "string",
+                                "description": "string"
+                            }
+                        ],
+                        "approved_for_delivery": "boolean"
+                    }
+                }
+            },
+            "docs": {
+                "description": "Documentación técnica y de usuario: READMEs, guías de uso, comentarios de código.",
+                "model": "gemini-flash",
+                "circle": 3,
+                "can_read": [
+                    "output/[proyecto]/src/",
+                    "output/[proyecto]/spec.md",
+                    "output/[proyecto]/state.json",
+                    "skills/notebooklm/SKILL.md"
+                ],
+                "can_write": [
+                    "output/[proyecto]/docs/",
+                    "output/[proyecto]/README.md",
+                    "core/airon.sqlite:artifacts",
+                    "core/airon.sqlite:execution_logs",
+                    "core/airon.sqlite:checkpoints"
+                ],
+                "can_call_mcps": [
+                    "notebooklm"
+                ],
+                "can_escalate_to": [
+                    "orchestrator"
+                ],
+                "forbidden": [
+                    "Modificar código fuente",
+                    "Inventar comportamientos no verificados en el código",
+                    "Omitir registro de documentos generados en artifacts"
+                ],
+                "output_schema": {
+                    "artifact": {
+                        "file_path": "string",
+                        "file_type": "doc",
+                        "checksum": "string SHA256",
+                        "description": "string"
+                    }
+                }
+            }
+        }
+    },
+    "hitl": {
+        "description": "Human-in-the-Loop. Punto de escalación cuando el sistema no puede auto-resolver.",
+        "trigger_conditions": [
+            "Tres fallos consecutivos en la misma tarea",
+            "STOP_LOSS activado",
+            "RFC pendiente de aprobación",
+            "Cambio arquitectural detectado",
+            "Integridad de artefacto comprometida (checksum_verified = 2)",
+            "Ambigüedad en spec.md que afecte decisiones irreversibles"
+        ],
+        "protocol": "Detener ejecución → registrar en execution_logs(HITL_ESCALATION) → actualizar state.json(estado=PAUSED) → notificar al operador con contexto completo del problema"
+    }
+}

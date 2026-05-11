@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.venv/
+.env
+
+# SQLite (AIRON-Cast State Engine)
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.db
+!core/airon_cast_schema.sql
+
+# VSCode / Antigravity
+.vscode/
+!.vscode/settings.json
+
+# Output (Client Projects - Intellectual Property)
+output/
+
+# Sensitive Framework Files
+mcp_config.json
+
+# Backups and Compressed (Preventing hidden .env leaks)
+*.zip
+*.rar
+*.7z
+*.bak
+
+# Development and Testing
+scratch/
+tmp/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs
+*.log
+core/brain/
+
+# OS
+.DS_Store
+Thumbs.db
