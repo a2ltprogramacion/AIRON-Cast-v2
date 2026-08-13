@@ -1,0 +1,224 @@
+---
+// ProductCard.astro - Componente reutilizable para productos
+// Creado por frontend_worker - Tarea 46
+// Design tokens: mobile-first (375px base)
+
+interface Props {
+  title: string;
+  price: number;
+  image: string;
+  description?: string;
+  currency?: string;
+  onAddToCart?: () => void;
+}
+
+const {
+  title,
+  price,
+  image,
+  description,
+  currency = 'USD',
+  onAddToCart,
+} = Astro.props;
+
+// Design tokens (desde design-tokens.json)
+const colors = {
+  primary: 'var(--color-primary)',
+  secondary: 'var(--color-secondary)',
+  text: 'var(--color-text)',
+  textMuted: 'var(--color-text-muted)',
+  background: 'var(--color-background)',
+  border: 'var(--color-border)',
+  accent: 'var(--color-accent)',
+};
+
+const spacing = {
+  xs: 'var(--space-xs)',
+  sm: 'var(--space-sm)',
+  md: 'var(--space-md)',
+  lg: 'var(--space-lg)',
+  xl: 'var(--space-xl)',
+};
+
+const radius = {
+  sm: 'var(--radius-sm)',
+  md: 'var(--radius-md)',
+  lg: 'var(--radius-lg)',
+};
+
+const shadows = {
+  sm: 'var(--shadow-sm)',
+  md: 'var(--shadow-md)',
+  lg: 'var(--shadow-lg)',
+};
+---
+
+<style>
+  .product-card {
+    display: flex;
+    flex-direction: column;
+    background: {colors.background};
+    border: 1px solid {colors.border};
+    border-radius: {radius.lg};
+    overflow: hidden;
+    box-shadow: {shadows.sm};
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .product-card:hover {
+    box-shadow: {shadows.md};
+    transform: translateY(-2px);
+  }
+
+  .product-image {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    background: {colors.border};
+  }
+
+  .product-content {
+    display: flex;
+    flex-direction: column;
+    padding: {spacing.md};
+    flex: 1;
+    gap: {spacing.sm};
+  }
+
+  .product-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: {colors.text};
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .product-price {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: {colors.primary};
+    margin: 0;
+  }
+
+  .product-description {
+    font-size: 0.875rem;
+    color: {colors.textMuted};
+    line-height: 1.5;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .product-actions {
+    display: flex;
+    gap: {spacing.sm};
+    margin-top: auto;
+    padding-top: {spacing.sm};
+    border-top: 1px solid {colors.border};
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: {spacing.xs};
+    padding: {spacing.sm} {spacing.md};
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: {radius.md};
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.15s ease, opacity 0.15s ease;
+    text-decoration: none;
+  }
+
+  .btn-primary {
+    background: {colors.primary};
+    color: white;
+    flex: 1;
+  }
+
+  .btn-primary:hover {
+    opacity: 0.9;
+  }
+
+  .btn-secondary {
+    background: {colors.background};
+    color: {colors.text};
+    border: 1px solid {colors.border};
+    flex: 1;
+  }
+
+  .btn-secondary:hover {
+    background: {colors.border};
+  }
+
+  .btn-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  /* Mobile-first: 375px base */
+  @media (min-width: 640px) {
+    .product-card {
+      max-width: 280px;
+    }
+    
+    .product-content {
+      padding: {spacing.lg};
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .product-card {
+      max-width: 320px;
+    }
+  }
+</style>
+
+<article class="product-card" data-product-title="{title}">
+  <img 
+    src={image} 
+    alt={title} 
+    class="product-image"
+    loading="lazy"
+  />
+  <div class="product-content">
+    <h3 class="product-title">{title}</h3>
+    
+    {description && (
+      <p class="product-description">{description}</p>
+    )}
+    
+    <p class="product-price">
+      {new Intl.NumberFormat('es-AR', { 
+        style: 'currency', 
+        currency: currency,
+        minimumFractionDigits: 2 
+      }).format(price)}
+    </p>
+    
+    <div class="product-actions">
+      <button 
+        class="btn btn-primary"
+        onclick={onAddToCart ? onAddToCart.toString() : ''}
+        type="button"
+      >
+        <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+        Añadir
+      </button>
+      <button class="btn btn-secondary" type="button">
+        <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+        </svg>
+        Favorito
+      </button>
+    </div>
+  </div>
+</article>

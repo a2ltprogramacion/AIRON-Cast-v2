@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+{% block title %}Editar Cuenta Bancaria | Banesco Tracker{% endblock %}
+
+{% block content %}
+<div class="space-y-8 max-w-4xl mx-auto">
+    <!-- Encabezado con Botón Regresar -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="font-outfit font-extrabold text-3xl tracking-tight bg-gradient-to-r from-white via-slate-100 to-cyan-400 bg-clip-text text-transparent">
+                Modificar Cuenta Bancaria
+            </h1>
+            <p class="text-slate-400 text-sm mt-1">
+                Actualice el nombre personalizado, número de cuenta y el saldo inicial de su Cuenta Corriente Banesco.
+            </p>
+        </div>
+        <a href="{% url 'card_list' %}" 
+           class="inline-flex items-center px-4 py-2 bg-slate-900/60 hover:bg-slate-800 text-slate-350 hover:text-white rounded-xl border border-slate-800/80 hover:border-slate-700 font-semibold text-xs shadow transition-all duration-300 active:scale-95 cursor-pointer">
+            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Regresar
+        </a>
+    </div>
+
+    <!-- Contenido Principal: Cuenta Física (Izquierda) + Formulario (Derecha) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+        
+        <!-- Previsualización en Vivo de la Cuenta (Izquierda) -->
+        <div class="flex flex-col items-center justify-center space-y-4">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-widest">Vista Previa Bancaria</span>
+            
+            <div id="live_account_card" class="relative w-full max-w-sm h-48 rounded-3xl p-6 flex flex-col justify-between bg-gradient-to-br from-slate-950 via-slate-900 to-cyan-950 text-slate-200 border border-slate-800/80 shadow-2xl transition-all duration-500">
+                
+                <!-- Brand & Icon -->
+                <div class="flex justify-between items-start">
+                    <div class="flex items-center space-x-2">
+                        <svg class="w-5 h-5 text-cyan-400 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path>
+                        </svg>
+                        <span class="font-outfit font-black tracking-wider text-xs text-cyan-300">CUENTA CORRIENTE</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-[9px] uppercase tracking-wider block text-slate-400">Saldo Real</span>
+                        <span id="live_liquid_balance" class="font-outfit font-extrabold text-base text-emerald-400">Bs. {{ account.current_balance|stringformat:".2f" }}</span>
+                    </div>
+                </div>
+                
+                <!-- Account Number -->
+                <div>
+                    <span id="live_account_number" class="font-mono text-base tracking-widest block font-bold text-slate-200 drop-shadow">
+                        {{ account.account_number|slice:"0:4" }}  ••••  ••••  {{ account.last_four }}
+                    </span>
+                </div>
+                
+                <!-- Account Details Footer -->
+                <div class="flex justify-between items-end">
+                    <div class="truncate max-w-[180px]">
+                        <span class="text-[9px] uppercase tracking-wider block text-slate-450">Nombre / Titular</span>
+                        <span id="live_account_name" class="font-semibold text-xs tracking-wide block text-slate-100 truncate">{{ account.name }}</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-[9px] uppercase tracking-wider block text-slate-450">Saldo Inicial</span>
+                        <span id="live_initial_balance" class="font-mono text-[10px] text-slate-350 font-bold">Bs. {{ account.initial_balance|stringformat:".2f" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulario de Edición (Derecha) -->
+        <div class="glass rounded-2xl p-6 border border-slate-800/60 shadow-2xl">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- ID de Cuenta -->
+                <div class="flex justify-between items-center bg-slate-950/40 px-4 py-2 rounded-lg border border-slate-900/60">
+                    <span class="text-xs text-slate-500 font-mono">Identificador de Base de Datos:</span>
+                    <span class="text-xs text-cyan-400 font-mono font-bold"># {{ account.id }}</span>
+                </div>
+
+                <!-- Nombre -->
+                <div>
+                    <label for="name_input" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Nombre Personalizado de la Cuenta</label>
+                    <input type="text" id="name_input" name="name" value="{{ account.name }}" required
+                           class="w-full bg-slate-950/80 border border-slate-850 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-2.5 text-slate-100 text-sm focus:outline-none transition-all duration-150">
+                </div>
+
+                <!-- Número de Cuenta Completo -->
+                <div>
+                    <label for="account_number_input" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Número de Cuenta Banesco (20 dígitos)</label>
+                    <input type="text" id="account_number_input" name="account_number" value="{{ account.account_number }}" required maxlength="20"
+                           class="w-full bg-slate-950/80 border border-slate-850 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-2.5 text-slate-100 text-sm font-mono focus:outline-none transition-all duration-150">
+                    <p class="text-[10px] text-slate-500 mt-1">El número de cuenta debe tener exactamente 20 dígitos numéricos.</p>
+                </div>
+
+                <!-- Saldo Inicial -->
+                <div>
+                    <label for="initial_balance_input" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Saldo Inicial en Cuenta (Bs.)</label>
+                    <input type="text" id="initial_balance_input" name="initial_balance" value="{{ account.initial_balance|stringformat:".2f" }}" required
+                           class="w-full bg-slate-950/80 border border-slate-850 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-2.5 text-slate-100 text-sm font-mono focus:outline-none transition-all duration-150">
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="flex items-center space-x-3 pt-2">
+                    <button type="submit" 
+                            class="flex-1 inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-bold text-sm rounded-xl shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/35 transition-all duration-300 cursor-pointer active:scale-95">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Guardar Cambios
+                    </button>
+                    <a href="{% url 'card_list' %}" 
+                       class="inline-flex items-center justify-center px-4 py-3 bg-slate-900/60 hover:bg-slate-850 text-slate-400 hover:text-white font-semibold text-sm rounded-xl border border-slate-850 hover:border-slate-700 transition-all duration-300 cursor-pointer active:scale-95">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+        
+    </div>
+</div>
+
+<script>
+    const nameInput = document.getElementById('name_input');
+    const accountNumberInput = document.getElementById('account_number_input');
+    const initialBalanceInput = document.getElementById('initial_balance_input');
+    
+    const liveName = document.getElementById('live_account_name');
+    const liveNumber = document.getElementById('live_account_number');
+    const liveInitial = document.getElementById('live_initial_balance');
+    const liveLiquid = document.getElementById('live_liquid_balance');
+    
+    // Almacenar saldo liquido anterior y saldo inicial para calcular la diferencia y actualizar liquido en vivo
+    const originalInitial = parseFloat("{{ account.initial_balance }}") || 0;
+    const originalLiquid = parseFloat("{{ account.current_balance }}") || 0;
+    const fixedDifference = originalLiquid - originalInitial;
+
+    function formatNumber(num) {
+        return num.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    // Eventos para actualizar la vista previa en tiempo real
+    nameInput.addEventListener('input', (e) => {
+        liveName.textContent = e.target.value || "CUENTA CORRIENTE BANESCO";
+    });
+
+    accountNumberInput.addEventListener('input', (e) => {
+        let val = e.target.value.replace(/\D/g, '');
+        e.target.value = val.substring(0, 20); // limitar a 20 digitos
+        
+        let displayVal = "0134  ••••  ••••  0000";
+        if (val.length >= 4) {
+            const firstFour = val.substring(0, 4);
+            const lastFour = val.length >= 8 ? val.substring(val.length - 4) : val.substring(val.length - 4);
+            
+            if (val.length >= 8) {
+                displayVal = `${firstFour}  ••••  ••••  ${val.substring(val.length - 4)}`;
+            } else {
+                displayVal = `${firstFour}  ••••  ••••  ${val.substring(4)}`;
+            }
+        }
+        liveNumber.textContent = displayVal;
+    });
+
+    initialBalanceInput.addEventListener('input', (e) => {
+        // Permitir cambiar comas por puntos temporalmente
+        let rawVal = e.target.value.replace(',', '.');
+        let parsedVal = parseFloat(rawVal) || 0;
+        
+        liveInitial.textContent = `Bs. ${formatNumber(parsedVal)}`;
+        
+        // El liquido actual se recalcula sumando el nuevo saldo inicial + los movimientos ya conciliados/egresos pendientes
+        const newLiquid = parsedVal + fixedDifference;
+        liveLiquid.textContent = `Bs. ${formatNumber(newLiquid)}`;
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,15 @@
+Tarjeta          Fecha Proc Descripci�n                                   Monto                      
+5467040014854567 11/12/2025 QUINCALLERIA FAMILIA WU C.A                                    +3.617,56 
+                 12/12/2025 COMER SPORT BOLTIUM SA                                         +2.951,62 
+                 12/12/2025 MICHAEL XAVIER SALCEDO                                         +2.321,00 
+                 12/12/2025 QUESOS Y CHARC WILMER                                          +2.258,29 
+                 12/12/2025 QUINCALLERIA FAMILIA WU C.A                                    +2.227,16 
+                 14/12/2025 INVERSIONES GUADALUPE                                          +3.249,60 
+                 17/12/2025 EGARDI YULIANA MARQUEZ                                           +600,00 
+                 17/12/2025 EGARDI YULIANA MARQUEZ                                         +5.000,00 
+                 23/12/2025 QUESOS Y CHARC WILMER                                          +3.725,58 
+                 28/12/2025 PAGO HOMEBANKIN                                               -25.950,81 
+                 31/12/2025 AULAR ROMERO YORWIN ALEJANDRO                                  +8.130,00 
+                 01/01/2026 DISTRIB Y CHARC EL MAN                                         +1.023,00 
+                 02/01/2026 AUTOMERCADO MAXIMA OFE                                           +409,70 
+                 02/01/2026 BODEGON LAS CUMARAGUAS                                         +1.658,00 

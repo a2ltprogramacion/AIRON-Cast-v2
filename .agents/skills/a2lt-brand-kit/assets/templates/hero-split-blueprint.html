@@ -1,0 +1,45 @@
+<!-- 
+  A2LT Premium Hero: Split Blueprint 
+  - 50/50 Division
+  - Text Left, Image Right
+  - 100svh support
+-->
+<section class="a2lt-hero-base relative bg-slate-950">
+  <div class="container mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center relative z-10 w-full">
+    
+    <!-- Text Content (Left) -->
+    <div class="space-y-8 py-20 lg:py-0">
+      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surface border border-white/5">
+        <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+        <span class="text-sm font-medium text-slate-300">Soluciones de Grado Empresarial</span>
+      </div>
+      
+      <h1 class="text-5xl lg:text-7xl font-heading font-black text-white leading-[1.1]">
+        Transformación <br />
+        <span class="a2lt-shine-copper">Digital Sólida</span>
+      </h1>
+      
+      <p class="text-lg text-slate-400 max-w-lg leading-relaxed">
+        El modelo Split es perfecto para explicar un producto complejo o servicio específico. El usuario lee a la izquierda y valida visualmente a la derecha.
+      </p>
+      
+      <div class="flex flex-wrap gap-4 pt-4">
+        <button class="px-8 py-4 bg-primary text-white font-bold rounded-xl hover:bg-primary-dark transition-all shadow-lg hover:shadow-primary/50">
+          Agendar Consultoría
+        </button>
+      </div>
+    </div>
+
+    <!-- Image / Visual (Right) -->
+    <div class="relative h-[50vh] lg:h-[80vh] w-full rounded-2xl overflow-hidden border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+      <img src="https://images.unsplash.com/photo-1551434678-e076c223a692?q=80&w=2070&auto=format&fit=crop" class="w-full h-full object-cover" alt="Dashboard" />
+      <!-- Subtle Overlay to blend with dark mode -->
+      <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-transparent to-transparent opacity-80 lg:hidden"></div>
+      <div class="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-2xl"></div>
+    </div>
+
+  </div>
+  
+  <!-- Subtle Background Glow -->
+  <div class="absolute top-1/2 right-1/4 w-96 h-96 bg-primary/20 blur-[120px] rounded-full pointer-events-none"></div>
+</section>

@@ -1,0 +1,25 @@
+{
+  "testimonials": [
+    {
+      "id": "t1",
+      "name": "[Nombre del cliente 1]",
+      "city": "[Ciudad]",
+      "rating": 5,
+      "text": "[TESTIMONIO REAL — Carlos, reemplazar con una cita de un cliente satisfecho. Recomendado: que sea específico, mencione el producto y el resultado. Ejemplo: 'Pedí el Intenso y se nota que fue tostado hace poco. Nunca había probado un espresso tan redondo en casa.']"
+    },
+    {
+      "id": "t2",
+      "name": "[Nombre del cliente 2]",
+      "city": "[Ciudad]",
+      "rating": 5,
+      "text": "[TESTIMONIO REAL — Carlos, reemplazar con una cita de un cliente satisfecho. Recomendado: que hable del proceso o la atención. Ejemplo: 'Me encanta que tuestan a pedido. Carlos me explicó el origen del grano y me recomendó el Suave para mi V60. Repetí tres veces.']"
+    },
+    {
+      "id": "t3",
+      "name": "[Nombre del cliente 3]",
+      "city": "[Ciudad]",
+      "rating": 5,
+      "text": "[TESTIMONIO REAL — Carlos, reemplazar con una cita de un cliente satisfecho. Recomendado: que mencione la calidad o el envío. Ejemplo: 'El envío rapidísimo y el paquete llegó impecable. El Descafeinado es el único que no me quita el sueño.']"
+    }
+  ]
+}

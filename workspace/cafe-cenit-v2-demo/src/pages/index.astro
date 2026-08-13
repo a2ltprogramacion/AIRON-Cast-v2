@@ -1,0 +1,154 @@
+---
+import '../styles/global.css';
+import ProductCard from '../components/ProductCard.astro';
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Café Cenit — Demo Round-Robin</title>
+  </head>
+  <body>
+    <main class="hero">
+      <div class="container">
+        <h1>
+          Café tostado cuando lo pedís.
+          <span class="accent">Ni un día antes.</span>
+        </h1>
+        <p class="lede">
+          Origen único venezolano, empacado al vacío el mismo día del tueste.
+        </p>
+        <a href="#contacto" class="cta">Pedir por WhatsApp</a>
+      </div>
+    </main>
+
+    <section class="productos" id="productos">
+      <div class="container">
+        <h2 class="section-title">Nuestros cafés</h2>
+        <div class="grid">
+          <ProductCard
+            title="Origen Único Venezolano"
+            price={18500}
+            image="https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=400&h=300&fit=crop"
+            description="Tostado medio, notas a chocolate y nuez. Empacado al vacío el día del tueste."
+            currency="ARS"
+          />
+          <ProductCard
+            title="Blend Especial"
+            price={22000}
+            image="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400&h=300&fit=crop"
+            description="Blend de granos centroamericanos, tostado oscuro. Ideal para espresso."
+            currency="ARS"
+          />
+          <ProductCard
+            title="Descafeinado Natural"
+            price={19500}
+            image="https://images.unsplash.com/photo-1511920170033-f8396924c348?w=400&h=300&fit=crop"
+            description="Proceso Swiss Water, sin químicos. Mismo sabor, sin cafeína."
+            currency="ARS"
+          />
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer" id="contacto">
+      <div class="container">
+        <p>Café Cenit — Tostado fresco, directo a tu puerta.</p>
+        <a href="https://wa.me/54911XXXXXXXX" class="cta whatsapp" target="_blank">
+          Pedir por WhatsApp
+        </a>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style>
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-bg-cream);
+    padding: 4rem 1.5rem;
+  }
+  .container {
+    max-width: 720px;
+    width: 100%;
+    text-align: center;
+  }
+  h1 {
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--color-roast-900);
+    margin: 0 0 1.5rem;
+  }
+  .accent {
+    color: var(--color-ember-500);
+  }
+  .lede {
+    font-family: var(--font-body);
+    font-size: 1.125rem;
+    line-height: 1.6;
+    color: var(--color-roast-700);
+    margin: 0 0 2.5rem;
+  }
+  .cta {
+    display: inline-block;
+    padding: 1rem 2rem;
+    background-color: var(--color-ember-500);
+    color: white;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 9999px;
+    text-decoration: none;
+    transition: background-color 0.2s, transform 0.2s;
+  }
+  .cta:hover {
+    background-color: var(--color-ember-600);
+    transform: translateY(-2px);
+  }
+
+  /* Sección productos */
+  .productos {
+    padding: 4rem 1.5rem;
+    background-color: var(--color-bg-paper);
+  }
+  .section-title {
+    font-family: var(--font-heading);
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 700;
+    color: var(--color-roast-900);
+    margin: 0 0 2.5rem;
+    text-align: center;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  /* Footer */
+  .footer {
+    padding: 3rem 1.5rem;
+    background-color: var(--color-roast-900);
+    color: var(--color-bg-paper);
+    text-align: center;
+  }
+  .footer p {
+    margin: 0 0 1.5rem;
+    opacity: 0.8;
+  }
+  .cta.whatsapp {
+    background-color: #25D366;
+  }
+  .cta.whatsapp:hover {
+    background-color: #128C7E;
+  }
+</style>

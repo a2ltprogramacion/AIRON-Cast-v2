@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+
+# AIRON-Cast
+.airon_supervisor.pid
+logs/
+*.log.bak
+
+# Environments
+.env
+.env.local
+.env.*.local
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Testing
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.egg-info/
+.tox/
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Node (Astro frontend in workspace projects)
+node_modules/
+.npm/
+.pnpm-store/

@@ -1,0 +1,4 @@
+Tarjeta          Fecha Proc Descripci�n                                   Monto                      
+5467040014854567 07/02/2026 COMER SPORT BOLTIUM SA                                        +26.210,00 
+                 26/02/2026 PAGO HOMEBANKIN                                               -26.210,00 
+                 27/02/2026 COMER SPORT BOLTIUM SA                                        +10.790,00 

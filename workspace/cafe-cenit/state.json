@@ -1,0 +1,53 @@
+{
+  "project_slug": "cafe-cenit",
+  "name": "Café Cenit",
+  "current_task": "T-10",
+  "current_agent": "docs",
+  "status": "BUILD",
+  "circle": 3,
+  "phase": "FINALIZING",
+  "started_at": "2026-06-06T00:00:00Z",
+  "updated_at": "2026-06-06T00:00:00Z",
+  "metrics": {
+    "tasks_total": 10,
+    "tasks_completed": 9,
+    "tasks_in_progress": 1,
+    "tokens_used": 0,
+    "artifacts_generated": 0
+  },
+  "flags": {
+    "stop_loss": false,
+    "hitl_required": false,
+    "operator_approval_pending": false
+  },
+  "checkpoints": [
+    {
+      "id": "CP-01",
+      "task": "T-01",
+      "agent": "ux-ui_specialist",
+      "status": "completed",
+      "artifact": "src/styles/design-tokens.json"
+    },
+    {
+      "id": "CP-02",
+      "task": "T-02",
+      "agent": "writer",
+      "status": "completed",
+      "artifact": "src/content/*.json"
+    },
+    {
+      "id": "CP-03",
+      "task": "T-07",
+      "agent": "frontend_worker",
+      "status": "completed",
+      "artifact": "src/pages/index.astro"
+    },
+    {
+      "id": "CP-04",
+      "task": "T-09",
+      "agent": "qa_auditor",
+      "status": "completed",
+      "artifact": "reports/qa_report.md"
+    }
+  ]
+}

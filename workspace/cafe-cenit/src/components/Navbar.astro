@@ -1,0 +1,137 @@
+---
+import siteData from '../content/site.json';
+---
+
+<header
+  id="navbar"
+  class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+  style="background-color: rgba(245, 239, 230, 0.85); backdrop-filter: blur(0px);"
+>
+  <div class="container-cenit flex items-center justify-between h-16 md:h-20">
+    <a href="#inicio" class="flex items-center gap-2 group" aria-label="Café Cenit - Inicio">
+      <span class="text-2xl md:text-3xl font-heading font-bold tracking-tight" style="color: var(--color-roast-900);">
+        Café <span style="color: var(--color-ember-500);">Cenit</span>
+      </span>
+    </a>
+
+    <nav class="hidden lg:flex items-center gap-8" aria-label="Navegación principal">
+      <a href="#inicio" class="text-sm font-medium hover:opacity-70 transition-opacity" style="color: var(--color-roast-700);">Inicio</a>
+      <a href="#proceso" class="text-sm font-medium hover:opacity-70 transition-opacity" style="color: var(--color-roast-700);">Proceso</a>
+      <a href="#cafes" class="text-sm font-medium hover:opacity-70 transition-opacity" style="color: var(--color-roast-700);">Cafés</a>
+      <a href="#testimonios" class="text-sm font-medium hover:opacity-70 transition-opacity" style="color: var(--color-roast-700);">Testimonios</a>
+      <a href="#contacto" class="text-sm font-medium hover:opacity-70 transition-opacity" style="color: var(--color-roast-700);">Contacto</a>
+    </nav>
+
+    <div class="flex items-center gap-3">
+      <div class="hidden md:flex items-center gap-1 rounded-full p-1 border" style="background-color: var(--color-bg-paper); border-color: var(--color-roast-100);">
+        <button
+          data-currency-switch="USD"
+          aria-pressed="true"
+          class="is-active px-3 py-1.5 text-xs font-semibold rounded-full transition-all"
+          style="background-color: var(--color-ember-500); color: white;"
+        >USD</button>
+        <button
+          data-currency-switch="VES"
+          aria-pressed="false"
+          class="px-3 py-1.5 text-xs font-semibold rounded-full transition-all hover:opacity-70"
+          style="color: var(--color-roast-700);"
+        >Bs.</button>
+      </div>
+
+      <a
+        href={`https://wa.me/${siteData.whatsapp.replace(/[^\d]/g, '')}?text=${encodeURIComponent('Hola Café Cenit, quiero hacer un pedido.')}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="hidden sm:inline-flex items-center gap-2 px-4 py-2 md:px-5 md:py-2.5 text-sm font-semibold rounded-full transition-all hover:-translate-y-0.5 shadow-md hover:shadow-lg"
+        style="background-color: var(--color-ember-500); color: white;"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M7 17L17 7M17 7H7M17 7v10"/>
+        </svg>
+        Pedir ahora
+      </a>
+
+      <button
+        id="mobile-menu-btn"
+        class="lg:hidden p-2 rounded-lg"
+        style="color: var(--color-roast-700);"
+        aria-label="Abrir menú"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div
+    id="mobile-menu"
+    class="lg:hidden hidden border-t"
+    style="background-color: var(--color-bg-cream); border-color: var(--color-roast-100);"
+  >
+    <nav class="container-cenit flex flex-col py-4 gap-1" aria-label="Navegación móvil">
+      <a href="#inicio" class="mobile-link px-4 py-3 rounded-lg text-base font-medium" style="color: var(--color-roast-900);">Inicio</a>
+      <a href="#proceso" class="mobile-link px-4 py-3 rounded-lg text-base font-medium" style="color: var(--color-roast-900);">Proceso</a>
+      <a href="#cafes" class="mobile-link px-4 py-3 rounded-lg text-base font-medium" style="color: var(--color-roast-900);">Cafés</a>
+      <a href="#testimonios" class="mobile-link px-4 py-3 rounded-lg text-base font-medium" style="color: var(--color-roast-900);">Testimonios</a>
+      <a href="#contacto" class="mobile-link px-4 py-3 rounded-lg text-base font-medium" style="color: var(--color-roast-900);">Contacto</a>
+
+      <div class="flex items-center gap-2 px-4 py-3 mt-2 border-t" style="border-color: var(--color-roast-100);">
+        <span class="text-xs font-semibold" style="color: var(--color-roast-700);">Moneda:</span>
+        <button data-currency-switch="USD" aria-pressed="true" class="is-active px-3 py-1.5 text-xs font-semibold rounded-full" style="background-color: var(--color-ember-500); color: white;">USD</button>
+        <button data-currency-switch="VES" aria-pressed="false" class="px-3 py-1.5 text-xs font-semibold rounded-full" style="color: var(--color-roast-700);">Bs.</button>
+      </div>
+
+      <a
+        href={`https://wa.me/${siteData.whatsapp.replace(/[^\d]/g, '')}?text=${encodeURIComponent('Hola Café Cenit, quiero hacer un pedido.')}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="mobile-link mt-2 mx-4 inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold rounded-full"
+        style="background-color: var(--color-ember-500); color: white;"
+      >
+        Pedir por WhatsApp
+      </a>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const navbar = document.getElementById('navbar');
+  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+  const mobileMenu = document.getElementById('mobile-menu');
+  const mobileLinks = document.querySelectorAll<HTMLAnchorElement>('.mobile-link');
+
+  if (navbar) {
+    const onScroll = () => {
+      if (window.scrollY > 80) {
+        navbar.style.backgroundColor = 'rgba(245, 239, 230, 0.92)';
+        navbar.style.backdropFilter = 'blur(12px)';
+        navbar.style.boxShadow = '0 1px 3px rgba(59, 36, 23, 0.06)';
+      } else {
+        navbar.style.backgroundColor = 'rgba(245, 239, 230, 0.85)';
+        navbar.style.backdropFilter = 'blur(0px)';
+        navbar.style.boxShadow = 'none';
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  }
+
+  if (mobileMenuBtn && mobileMenu) {
+    mobileMenuBtn.addEventListener('click', () => {
+      const isOpen = !mobileMenu.classList.contains('hidden');
+      mobileMenu.classList.toggle('hidden');
+      mobileMenuBtn.setAttribute('aria-expanded', String(!isOpen));
+    });
+    mobileLinks.forEach((link) => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.add('hidden');
+        mobileMenuBtn?.setAttribute('aria-expanded', 'false');
+      });
+    });
+  }
+</script>

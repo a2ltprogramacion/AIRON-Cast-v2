@@ -1,0 +1,323 @@
+{% extends 'base.html' %}
+{% block title %}Editar Tarjeta | Banesco Tracker{% endblock %}
+
+{% block content %}
+<div class="space-y-8 max-w-4xl mx-auto">
+    <!-- Encabezado con Botón Regresar -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="font-outfit font-extrabold text-3xl tracking-tight bg-gradient-to-r from-white via-slate-100 to-emerald-400 bg-clip-text text-transparent">
+                Modificar Parámetros de Tarjeta
+            </h1>
+            <p class="text-slate-400 text-sm mt-1">
+                Actualice el nombre personalizado, número de terminación y fechas de corte/límite de pago.
+            </p>
+        </div>
+        <a href="{% url 'card_list' %}" 
+           class="inline-flex items-center px-4 py-2 bg-slate-900/60 hover:bg-slate-800 text-slate-350 hover:text-white rounded-xl border border-slate-800/80 hover:border-slate-700 font-semibold text-xs shadow transition-all duration-300 active:scale-95 cursor-pointer">
+            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Regresar
+        </a>
+    </div>
+
+    <!-- Contenido Principal: Tarjeta Física (Izquierda) + Formulario (Derecha) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+        
+        <!-- Previsualización en Vivo de la Tarjeta (Izquierda) -->
+        <div class="flex flex-col items-center justify-center space-y-4">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-widest">Vista Previa</span>
+            
+            <div id="live_card" class="relative w-full max-w-sm h-48 rounded-3xl p-6 flex flex-col justify-between bg-gradient-to-br shadow-2xl transition-all duration-500 {{ card.theme_css }}">
+                
+                <!-- Chip & Tipo -->
+                <div class="flex justify-between items-start">
+                    <!-- Chip -->
+                    <div class="w-10 h-7 rounded-md bg-gradient-to-tr from-amber-400 to-yellow-200/60 shadow-inner flex items-center justify-center opacity-85">
+                        <div class="w-7 h-5 border border-slate-950/20 rounded"></div>
+                    </div>
+                    <!-- Brand Label -->
+                    <div class="text-right">
+                        <span id="live_card_type" class="font-outfit font-black tracking-wider text-sm opacity-90 block">
+                            {{ card.card_type_display|upper }}
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Card Number -->
+                <div>
+                    <span id="live_card_number" class="font-mono text-xl tracking-widest block font-bold opacity-90 drop-shadow">
+                        ••••  ••••  ••••  {{ card.last_four }}
+                    </span>
+                </div>
+                
+                <!-- Card Details Footer -->
+                <div class="flex justify-between items-end">
+                    <div>
+                        <span class="text-[10px] uppercase tracking-wider block opacity-70">Nombre</span>
+                        <span id="live_card_name" class="font-semibold text-sm tracking-wide block truncate max-w-[170px]">{{ card.name }}</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-[10px] uppercase tracking-wider block opacity-70">Corte / Límite</span>
+                        <span id="live_card_dates" class="font-mono text-xs font-bold block">
+                            {% if card.cutoff_day %}
+                                Día {{ card.cutoff_day }} / Día {{ card.payment_day }}
+                            {% else %}
+                                DÉBITO DIRECTO
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulario de Edición (Derecha) -->
+        <div class="glass rounded-2xl p-6 border border-slate-800/60 shadow-2xl">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- ID de Tarjeta -->
+                <div class="flex justify-between items-center bg-slate-950/40 px-4 py-2 rounded-lg border border-slate-900/60">
+                    <span class="text-xs text-slate-500 font-mono">Identificador de Base de Datos:</span>
+                    <span class="text-xs text-emerald-400 font-mono font-bold"># {{ card.id }}</span>
+                </div>
+
+                <!-- Nombre -->
+                <div>
+                    <label for="name_input" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Nombre Personalizado</label>
+                    <input type="text" id="name_input" name="name" value="{{ card.name }}" required
+                           class="w-full bg-slate-950/80 border border-slate-850 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-xl px-4 py-2.5 text-slate-100 text-sm focus:outline-none transition-all duration-150">
+                </div>
+
+                <!-- Últimos 4 Dígitos -->
+                <div>
+                    <label for="last_four_input" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Últimos 4 Dígitos</label>
+                    <input type="text" id="last_four_input" name="last_four" value="{{ card.last_four }}" required maxlength="4"
+                           class="w-full bg-slate-950/80 border border-slate-850 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-xl px-4 py-2.5 text-slate-100 text-sm font-mono focus:outline-none transition-all duration-150">
+                </div>
+
+                <!-- Título de Tarjeta Visible -->
+                <div>
+                    <label for="card_type_display_input" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Título de Tarjeta Visible</label>
+                    <input type="text" id="card_type_display_input" name="card_type_display" value="{{ card.card_type_display }}" required
+                           class="w-full bg-slate-950/80 border border-slate-850 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-xl px-4 py-2.5 text-slate-100 text-sm focus:outline-none transition-all duration-150">
+                </div>
+
+                <!-- Color / Diseño Visual (Gradiente) -->
+                <div>
+                    <label for="theme_color_input" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Diseño Visual (Gradiente)</label>
+                    <select id="theme_color_input" name="theme_color"
+                            class="w-full bg-slate-950/80 border border-slate-850 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-xl px-4 py-2.5 text-slate-100 text-sm focus:outline-none transition-all duration-150">
+                        <option value="gold" {% if card.theme_color == 'gold' %}selected{% endif %}>Dorado Metálico</option>
+                        <option value="platinum" {% if card.theme_color == 'platinum' %}selected{% endif %}>Gris Platino Oscuro</option>
+                        <option value="silver" {% if card.theme_color == 'silver' %}selected{% endif %}>Plata Metálica</option>
+                        <option value="black" {% if card.theme_color == 'black' %}selected{% endif %}>Carbono Profundo</option>
+                        <option value="green" {% if card.theme_color == 'green' %}selected{% endif %}>Verde Esmeralda</option>
+                        <option value="blue" {% if card.theme_color == 'blue' %}selected{% endif %}>Azul Zafiro</option>
+                        <option value="purple" {% if card.theme_color == 'purple' %}selected{% endif %}>Violeta Real</option>
+                        <option value="red" {% if card.theme_color == 'red' %}selected{% endif %}>Rubí Intenso</option>
+                        <option value="white" {% if card.theme_color == 'white' %}selected{% endif %}>Hielo Blanco</option>
+                    </select>
+                </div>
+
+                <div id="financial_fields" class="space-y-4 {% if not card.cutoff_day %}opacity-30 pointer-events-none{% endif %}">
+                    <div>
+                        <label for="credit_limit_input" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Límite de Crédito (Bs.)</label>
+                        <input type="number" id="credit_limit_input" name="credit_limit" min="0" step="0.01" value="{{ card.credit_limit }}"
+                               class="w-full bg-slate-950/80 border border-slate-850 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-xl px-4 py-2.5 text-slate-100 text-sm font-mono focus:outline-none transition-all duration-150">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="interest_rate_input" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Tasa Nominal Anual (%)</label>
+                            <input type="number" id="interest_rate_input" name="interest_rate" min="0" max="100" step="0.01" value="{{ card.interest_rate }}"
+                                   class="w-full bg-slate-950/80 border border-slate-850 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-xl px-4 py-2.5 text-slate-100 text-sm font-mono focus:outline-none transition-all duration-150">
+                        </div>
+                        <div>
+                            <label for="mora_rate_input" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Tasa de Mora (%)</label>
+                            <input type="number" id="mora_rate_input" name="mora_rate" min="0" max="100" step="0.01" value="{{ card.mora_rate }}"
+                                   class="w-full bg-slate-950/80 border border-slate-850 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-xl px-4 py-2.5 text-slate-100 text-sm font-mono focus:outline-none transition-all duration-150">
+                        </div>
+                    </div>
+
+
+                </div>
+
+                <!-- Cuenta Bancaria Asociada -->
+                <div>
+                    <label for="associated_account" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Cuenta Bancaria Asociada (Débito Directo / Pago de TDC)</label>
+                    <select id="associated_account" name="associated_account"
+                            class="w-full bg-slate-950/80 border border-slate-850 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-xl px-4 py-2.5 text-slate-100 text-sm focus:outline-none transition-all duration-150">
+                        <option value="">(Ninguna)</option>
+                        {% for account in bank_accounts %}
+                            <option value="{{ account.id }}" {% if card.associated_account_id == account.id %}selected{% endif %}>
+                                {{ account.name }} (*{{ account.last_four }}) - Saldo: {{ account.current_balance }} Bs.
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Tipo / Fechas de Ciclo -->
+                <div>
+                    <label for="card_type_select" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Tipo de Ciclos</label>
+                    <select id="card_type_select" onchange="toggleCycleFields(this.value)"
+                            class="w-full bg-slate-950/80 border border-slate-850 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-xl px-4 py-2.5 text-slate-100 text-sm focus:outline-none transition-all duration-150">
+                        <option value="TDC" {% if card.cutoff_day %}selected{% endif %}>Tarjeta de Crédito (Con Ciclos)</option>
+                        <option value="DEBIT" {% if not card.cutoff_day %}selected{% endif %}>Tarjeta de Débito (Sin Ciclos)</option>
+                    </select>
+                </div>
+
+                <!-- Fechas de Corte y Pago -->
+                <div id="cycle_fields" class="space-y-4 {% if not card.cutoff_day %}opacity-30 pointer-events-none{% endif %}">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="cutoff_day_input" class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Día de Corte</label>
+                            <input type="number" id="cutoff_day_input" name="cutoff_day" min="1" max="31" value="{{ card.cutoff_day|default:'' }}"
+                                   class="w-full bg-slate-950/80 border border-slate-850 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-xl px-4 py-2.5 text-slate-100 text-sm font-mono focus:outline-none transition-all duration-150">
+                        </div>
+                        <div>
+                            <label for="payment_day_input" class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Día Límite de Pago</label>
+                            <input type="number" id="payment_day_input" name="payment_day" min="1" max="31" value="{{ card.payment_day|default:'' }}"
+                                   class="w-full bg-slate-950/80 border border-slate-850 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-xl px-4 py-2.5 text-slate-100 text-sm font-mono focus:outline-none transition-all duration-150">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="flex items-center space-x-3 pt-2">
+                    <button type="submit" 
+                            class="flex-1 inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-600 hover:to-teal-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/35 transition-all duration-300 cursor-pointer active:scale-95">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Guardar Cambios
+                    </button>
+                    <a href="{% url 'card_list' %}" 
+                       class="inline-flex items-center justify-center px-4 py-3 bg-slate-900/60 hover:bg-slate-850 text-slate-400 hover:text-white font-semibold text-sm rounded-xl border border-slate-850 hover:border-slate-700 transition-all duration-300 cursor-pointer active:scale-95">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+        
+    </div>
+</div>
+
+<script>
+    const nameInput = document.getElementById('name_input');
+    const lastFourInput = document.getElementById('last_four_input');
+    const cutoffInput = document.getElementById('cutoff_day_input');
+    const paymentInput = document.getElementById('payment_day_input');
+    const liveCard = document.getElementById('live_card');
+    const liveName = document.getElementById('live_card_name');
+    const liveNumber = document.getElementById('live_card_number');
+    const liveDates = document.getElementById('live_card_dates');
+    const liveType = document.getElementById('live_card_type');
+
+    function toggleCycleFields(type) {
+        const fields = document.getElementById('cycle_fields');
+        const financialFields = document.getElementById('financial_fields');
+        const creditLimitInput = document.getElementById('credit_limit_input');
+        const interestRateInput = document.getElementById('interest_rate_input');
+        const moraRateInput = document.getElementById('mora_rate_input');
+        
+        if (type === 'DEBIT') {
+            fields.className = 'space-y-4 opacity-30 pointer-events-none';
+            cutoffInput.value = '';
+            paymentInput.value = '';
+            cutoffInput.removeAttribute('required');
+            paymentInput.removeAttribute('required');
+            
+            
+            
+            financialFields.className = 'space-y-4 opacity-30 pointer-events-none';
+            creditLimitInput.value = '0.00';
+            interestRateInput.value = '0.00';
+            moraRateInput.value = '0.00';
+            creditLimitInput.removeAttribute('required');
+            interestRateInput.removeAttribute('required');
+            moraRateInput.removeAttribute('required');
+            
+            // Actualizar vista previa
+            updateCardStyle();
+        } else {
+            fields.className = 'space-y-4';
+            cutoffInput.setAttribute('required', 'required');
+            paymentInput.setAttribute('required', 'required');
+            
+            
+            
+            financialFields.className = 'space-y-4';
+            creditLimitInput.setAttribute('required', 'required');
+            interestRateInput.setAttribute('required', 'required');
+            moraRateInput.setAttribute('required', 'required');
+            
+            if (creditLimitInput.value === '0.00' || !creditLimitInput.value) {
+                creditLimitInput.value = '0.00';
+            }
+            if (interestRateInput.value === '0.00' || !interestRateInput.value) {
+                interestRateInput.value = '60.00';
+            }
+            if (moraRateInput.value === '0.00' || !moraRateInput.value) {
+                moraRateInput.value = '3.00';
+            }
+            
+            // Re-evaluar clases según campos actuales
+            updateCardStyle();
+        }
+    }
+
+    function updateCardStyle() {
+        const selectVal = document.getElementById('card_type_select').value;
+        const colorVal = document.getElementById('theme_color_input').value;
+        const displayVal = document.getElementById('card_type_display_input').value;
+        const cutoffVal = parseInt(cutoffInput.value) || 0;
+        const paymentVal = parseInt(paymentInput.value) || 0;
+        
+        const colorMapping = {
+            'gold': 'from-amber-600 via-yellow-600 to-yellow-500 text-slate-950',
+            'platinum': 'from-slate-800 via-slate-700 to-slate-600 text-white',
+            'green': 'from-emerald-700 via-teal-800 to-emerald-500 text-white',
+            'blue': 'from-blue-950 via-teal-900 to-cyan-900 text-white',
+            'purple': 'from-slate-900 via-purple-950 to-indigo-900 text-white',
+            'black': 'from-slate-950 via-slate-900 to-zinc-900 text-white',
+            'silver': 'from-slate-400 via-slate-350 to-slate-200 text-slate-950',
+            'white': 'from-slate-100 via-slate-50 to-white text-slate-950 border border-slate-300/40',
+            'red': 'from-rose-900 via-red-950 to-rose-800 text-white'
+        };
+
+        liveCard.className = "relative w-full max-w-sm h-48 rounded-3xl p-6 flex flex-col justify-between bg-gradient-to-br shadow-2xl transition-all duration-500 " + (colorMapping[colorVal] || colorMapping['gold']);
+        liveType.textContent = (displayVal || "TARJETA").toUpperCase();
+        
+        if (selectVal === 'DEBIT') {
+            liveDates.textContent = "DÉBITO DIRECTO";
+        } else if (cutoffVal && paymentVal) {
+            liveDates.textContent = `Día ${cutoffVal} / Día ${paymentVal}`;
+        } else {
+            liveDates.textContent = "SIN CONFIGURAR";
+        }
+    }
+
+    // Eventos para actualizar la vista previa en tiempo real
+    nameInput.addEventListener('input', (e) => {
+        liveName.textContent = e.target.value || "NOMBRE DE TARJETA";
+    });
+
+    lastFourInput.addEventListener('input', (e) => {
+        const val = e.target.value.substring(0, 4);
+        liveNumber.textContent = `••••  ••••  ••••  ${val || '••••'}`;
+    });
+
+    cutoffInput.addEventListener('input', updateCardStyle);
+    paymentInput.addEventListener('input', updateCardStyle);
+    document.getElementById('card_type_display_input').addEventListener('input', updateCardStyle);
+    document.getElementById('theme_color_input').addEventListener('change', updateCardStyle);
+
+    // Inicializar estado de requeridos y estilos al cargar
+    toggleCycleFields(document.getElementById('card_type_select').value);
+    
+    // Ejecutar inicialización de estilo al cargar
+    updateCardStyle();
+</script>
+{% endblock %}

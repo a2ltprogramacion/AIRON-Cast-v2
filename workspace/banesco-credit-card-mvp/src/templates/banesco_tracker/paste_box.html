@@ -1,0 +1,383 @@
+{% extends 'base.html' %}
+{% block title %}Importar Transacciones | Banesco Tracker{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8">
+    <!-- Encabezado de la página -->
+    <div class="text-center space-y-3">
+        <h1 class="font-outfit font-extrabold text-3xl md:text-4xl tracking-tight bg-gradient-to-r from-white via-slate-100 to-emerald-400 bg-clip-text text-transparent">
+            Importar Transacciones
+        </h1>
+        <p class="text-slate-400 max-w-xl mx-auto text-sm md:text-base">
+            Copia y pega el texto de las notificaciones diarias de consumos de Banesco (Crédito y Débito). El motor de parseo regex extraerá las transacciones al instante.
+        </p>
+    </div>
+
+    <!-- Formulario Principal -->
+    <form method="post" action="{% url 'paste_box' %}" enctype="multipart/form-data" class="glass rounded-2xl p-6 md:p-8 space-y-6 shadow-2xl border border-slate-800/80">
+        {% csrf_token %}
+        <!-- Selector Global de Cuenta Destino para Importación -->
+        <div class="space-y-2 pb-4 border-b border-slate-900">
+            <label for="bank_account_id" class="block text-xs font-bold text-slate-300 uppercase tracking-widest">
+                Cuenta de Destino *
+            </label>
+            <div class="relative group max-w-md">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 transition-colors group-focus-within:text-emerald-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                    </svg>
+                </span>
+                <select id="bank_account_id" name="bank_account_id" required
+                        class="w-full bg-slate-950/80 border border-slate-800 rounded-xl pl-10 pr-4 py-3.5 text-slate-200 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all duration-300 cursor-pointer">
+                    {% for acc in bank_accounts %}
+                        <option value="{{ acc.id }}">
+                            {{ acc.name }} ({% if acc.account_type == 'savings' %}Ahorros{% else %}Corriente{% endif %}) - *{{ acc.last_four }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <p class="text-[10px] text-slate-500">
+                Nota: Si subes un extracto bancario oficial (.TXT), el sistema intentará auto-detectar la cuenta correcta según su número de cuenta.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Columna Izquierda: Copiar/Pegar Texto -->
+            <div class="space-y-2 flex flex-col justify-between">
+                <div>
+                    <label for="email_text" class="block text-sm font-semibold text-slate-300 mb-2">
+                        Opción A: Pegar Texto de Notificación
+                    </label>
+                    <p class="text-xs text-slate-500 mb-3">Pega directamente el contenido del correo electrónico de Banesco.</p>
+                </div>
+                <textarea id="email_text" name="email_text" rows="10" 
+                    class="w-full bg-slate-950 border border-slate-850 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-650 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all duration-200 flex-grow"
+                    placeholder="Pegue aquí el texto completo del correo de Banesco..."></textarea>
+            </div>
+
+            <!-- Columna Derecha: Subir Archivo Plano -->
+            <div class="space-y-2 flex flex-col justify-between">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-300 mb-2">
+                        Opción B: Cargar Estado de Cuenta (.txt) o Recibo (.pdf)
+                    </label>
+                    <p class="text-xs text-slate-500 mb-3">Arrastra o selecciona la exportación de movimientos (.txt) o un recibo PDF de transferencia.</p>
+                </div>
+                
+                <div id="dropzone" class="border-2 border-dashed border-slate-800 hover:border-emerald-500/50 bg-slate-950/50 hover:bg-slate-950 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 group flex-grow min-h-[220px] relative">
+                    <input type="file" id="report_file" name="report_file" accept=".txt,.pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    
+                    <div id="dropzone_content" class="space-y-4 pointer-events-none transition-all duration-300">
+                        <div class="p-4 bg-slate-900 rounded-full border border-slate-800 group-hover:border-emerald-500/20 group-hover:bg-slate-900/50 transition-all duration-300 inline-block shadow-inner">
+                            <svg class="w-10 h-10 text-slate-500 group-hover:text-emerald-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                            </svg>
+                        </div>
+                        
+                        <div class="space-y-1">
+                            <p class="text-sm font-medium text-slate-300 group-hover:text-slate-100 transition-colors duration-300">
+                                Cargar Archivo .TXT / .PDF
+                            </p>
+                            <p class="text-xs text-slate-500">
+                                Haz clic para buscar o arrastra el reporte aquí
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- File preview state (Hidden by default) -->
+                    <div id="file_preview" class="hidden space-y-4 pointer-events-none transition-all duration-300 w-full">
+                        <div class="p-4 bg-emerald-950/20 rounded-full border border-emerald-500/30 transition-all duration-300 inline-block shadow-lg shadow-emerald-500/10">
+                            <svg class="w-10 h-10 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                        
+                        <div class="space-y-1">
+                            <p id="file_name" class="text-sm font-semibold text-emerald-400 break-all px-4">
+                                reporte.txt
+                            </p>
+                            <p id="file_size" class="text-xs text-slate-400">
+                                4.2 KB
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center justify-between pt-4 border-t border-slate-900 gap-4">
+            <span class="text-xs text-slate-500 flex items-center space-x-1.5">
+                <svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                </svg>
+                <span>Conexión segura SSL y parseo en Sandbox local.</span>
+            </span>
+            <button type="submit" class="w-full sm:w-auto bg-gradient-to-tr from-emerald-500 to-teal-400 hover:from-emerald-600 hover:to-teal-500 text-white font-bold px-8 py-3.5 rounded-xl shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/20 active:scale-95 transition-all duration-300 flex items-center justify-center space-x-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                </svg>
+                <span>Procesar Transacciones</span>
+            </button>
+        </div>
+    </form>
+
+    <!-- Opción C: Registrar Pago Manual -->
+    <form method="post" action="{% url 'manual_payment' %}" class="glass rounded-2xl p-6 md:p-8 space-y-6 shadow-2xl border border-slate-800/80">
+        {% csrf_token %}
+        <div class="space-y-2">
+            <h2 class="font-outfit font-extrabold text-xl md:text-2xl text-slate-200 flex items-center space-x-2">
+                <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>Opción C: Registrar Pago Manual</span>
+            </h2>
+            <p class="text-xs text-slate-400">
+                Registra un abono o pago manual directamente. El motor FIFO deducirá automáticamente esta cantidad de los consumos pendientes de corte más antiguos.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Seleccionar Tarjeta -->
+            <div class="space-y-1.5">
+                <label for="card_id" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                    Tarjeta de Crédito *
+                </label>
+                <select id="card_id" name="card_id" required
+                    class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all duration-200">
+                    <option value="" disabled selected>-- Seleccione Tarjeta --</option>
+                    {% for card in cards %}
+                        <option value="{{ card.id }}">{{ card.card_type_display }} ({{ card.name }}) - *{{ card.last_four }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Monto en VES -->
+            <div class="space-y-1.5">
+                <label for="amount_ves" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                    Monto del Pago (Bs.) *
+                </label>
+                <div class="relative">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold text-sm">Bs.</span>
+                    <input type="number" id="amount_ves" name="amount_ves" step="0.01" min="0.01" required
+                        class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-11 pr-4 py-3 text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all duration-200"
+                        placeholder="0.00">
+                </div>
+            </div>
+
+            <!-- Fecha de Pago -->
+            <div class="space-y-1.5">
+                <label for="booking_date" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                    Fecha y Hora de Pago
+                </label>
+                <input type="datetime-local" id="booking_date" name="booking_date"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all duration-200">
+            </div>
+
+            <!-- Número de Referencia -->
+            <div class="space-y-1.5 md:col-span-1">
+                <label for="reference" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                    Referencia / Aprobación
+                </label>
+                <input type="text" id="reference" name="reference"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-650 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all duration-200"
+                    placeholder="Ej. 123456">
+            </div>
+
+            <!-- Descripción -->
+            <div class="space-y-1.5 md:col-span-2">
+                <label for="description" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                    Descripción / Concepto
+                </label>
+                <input type="text" id="description" name="description"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all duration-200"
+                    placeholder="Ej. Pago por transferencia mercantil / Abono taquilla">
+            </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center justify-between pt-4 border-t border-slate-900 gap-4">
+            <span class="text-xs text-slate-500 flex items-center space-x-1.5">
+                <svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>Este pago se registrará como monto negativo en la base de datos para la conciliación.</span>
+            </span>
+            <button type="submit" class="w-full sm:w-auto bg-gradient-to-tr from-emerald-500 to-teal-400 hover:from-emerald-600 hover:to-teal-500 text-white font-bold px-8 py-3.5 rounded-xl shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/20 active:scale-95 transition-all duration-300 flex items-center justify-center space-x-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"></path>
+                </svg>
+                <span>Registrar Pago Manual</span>
+            </button>
+        </div>
+    </form>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.getElementById('report_file');
+            const dropzone = document.getElementById('dropzone');
+            const dropzoneContent = document.getElementById('dropzone_content');
+            const filePreview = document.getElementById('file_preview');
+            const fileName = document.getElementById('file_name');
+            const fileSize = document.getElementById('file_size');
+            const emailText = document.getElementById('email_text');
+            const bookingDateInput = document.getElementById('booking_date');
+
+            // Inicializar fecha y hora actual en local para el input datetime-local
+            if (bookingDateInput) {
+                const now = new Date();
+                const tzOffset = now.getTimezoneOffset() * 60000;
+                const localISOTime = (new Date(now - tzOffset)).toISOString().slice(0, 16);
+                bookingDateInput.value = localISOTime;
+            }
+
+            // Manejar selección de archivos
+            fileInput.addEventListener('change', function(e) {
+                if (fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    displayFile(file);
+                } else {
+                    resetDropzone();
+                }
+            });
+
+            // Eventos de arrastre
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    dropzone.classList.add('border-emerald-400', 'bg-slate-900/40', 'scale-[1.01]', 'shadow-emerald-500/5');
+                }, false);
+            });
+
+            dropzone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('border-emerald-400', 'bg-slate-900/40', 'scale-[1.01]', 'shadow-emerald-500/5');
+            }, false);
+
+            dropzone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('border-emerald-400', 'bg-slate-900/40', 'scale-[1.01]', 'shadow-emerald-500/5');
+
+                // Capturar el archivo arrastrado y asignarlo al input
+                if (e.dataTransfer.files.length > 0) {
+                    fileInput.files = e.dataTransfer.files;
+                    displayFile(e.dataTransfer.files[0]);
+                }
+            }, false);
+
+            function displayFile(file) {
+                // Rellenar metadatos
+                fileName.textContent = file.name;
+                fileSize.textContent = formatBytes(file.size);
+                
+                // Alternar visibilidad
+                dropzoneContent.classList.add('hidden');
+                filePreview.classList.remove('hidden');
+                
+                // Aplicar estilos de archivo activo
+                dropzone.classList.remove('border-slate-800');
+                dropzone.classList.add('border-emerald-500', 'bg-slate-950');
+                
+                // Limpiar textarea para evitar confusión de ingesta doble
+                emailText.value = '';
+                emailText.placeholder = 'Archivo "' + file.name + '" cargado. Despejado para evitar doble ingesta.';
+                emailText.disabled = true;
+                emailText.classList.add('opacity-40', 'cursor-not-allowed');
+            }
+
+            function resetDropzone() {
+                fileInput.value = '';
+                dropzoneContent.classList.remove('hidden');
+                filePreview.classList.add('hidden');
+                
+                dropzone.classList.remove('border-emerald-500', 'bg-slate-950');
+                dropzone.classList.add('border-slate-800');
+                
+                emailText.placeholder = 'Pegue aquí el texto completo del correo de Banesco...';
+                emailText.disabled = false;
+                emailText.classList.remove('opacity-40', 'cursor-not-allowed');
+            }
+
+            // Permitir hacer doble clic para reiniciar
+            dropzone.addEventListener('dblclick', function(e) {
+                if (fileInput.files.length > 0) {
+                    resetDropzone();
+                }
+            });
+
+            function formatBytes(bytes, decimals = 2) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const dm = decimals < 0 ? 0 : decimals;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+            }
+        });
+    </script>
+
+    <!-- Guía de Formatos Soportados -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Formato Tarjeta de Crédito -->
+        <div class="glass rounded-xl p-5 border border-slate-800/40 space-y-3">
+            <div class="flex items-center space-x-2 text-purple-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                </svg>
+                <h3 class="font-outfit font-bold text-sm uppercase tracking-wider">Formato Tarjeta de Crédito (TDC)</h3>
+            </div>
+            <p class="text-xs text-slate-400">El sistema reconoce automáticamente patrones de transacciones que siguen esta estructura estándar de notificaciones TDC Banesco:</p>
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-900">
+                <code class="text-[11px] text-purple-300 font-mono break-all">
+                    Banesco informa que se realizo un consumo en su TDC # 1234 Bs. 1.250,50 el 21-05-2026 13:45 Ref 987654321 en COMERCIO BANESCO.
+                </code>
+            </div>
+        </div>
+
+        <!-- Formato Tarjeta de Débito (TDD) -->
+        <div class="glass rounded-xl p-5 border border-slate-800/40 space-y-3">
+            <div class="flex items-center space-x-2 text-blue-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 009 11.57V9m12 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <h3 class="font-outfit font-bold text-sm uppercase tracking-wider">Formato Tarjeta de Débito (TDD)</h3>
+            </div>
+            <p class="text-xs text-slate-400">Las transacciones de débito extraídas de notificaciones multilínea por transferencias o consumos de tarjetas de débito:</p>
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-900">
+                <pre class="text-[10px] text-blue-300 font-mono leading-tight whitespace-pre-wrap">BANESCO
+Referencia: 041428
+Fecha: 19/05/2026
+Monto: 932,33
+Trace: 341428</pre>
+            </div>
+        </div>
+
+        <!-- Estado de Cuenta Bancario -->
+        <div class="glass rounded-xl p-5 border border-slate-800/40 space-y-3">
+            <div class="flex items-center space-x-2 text-emerald-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <h3 class="font-outfit font-bold text-sm uppercase tracking-wider">Estado de Cuenta Banesco (.TXT)</h3>
+            </div>
+            <p class="text-xs text-slate-400">Exporta en TXT tus movimientos desde Banesco Online. El sistema calibrará el saldo inicial y auto-conciliará todo:</p>
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-900">
+                <pre class="text-[9px] text-emerald-300 font-mono leading-tight whitespace-pre">19/05/2026   40001341428   COMPRA PUNTOS DE VENTA      -932,33  22.100,50
+19/05/2026   61397080182   EGRESO PAGO MOVIL BANESCO   -2.056,32  20.044,18</pre>
+            </div>
+        </div>
+
+        <!-- Comprobantes y PDFs de Transferencia -->
+        <div class="glass rounded-xl p-5 border border-slate-800/40 space-y-3">
+            <div class="flex items-center space-x-2 text-teal-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <h3 class="font-outfit font-bold text-sm uppercase tracking-wider">Recibos de Transferencia (.PDF)</h3>
+            </div>
+            <p class="text-xs text-slate-400">Sube directamente los PDFs de comprobante Banesco. Se extraerán datos enriquecidos como concepto y beneficiario:</p>
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-900 text-[10px] text-teal-300 font-mono">
+                Soporta archivos .PDF oficiales y también el copiado y pegado directo de la plantilla de correo de Banesco.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

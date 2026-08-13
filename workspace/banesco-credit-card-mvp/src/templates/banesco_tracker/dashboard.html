@@ -1,0 +1,1289 @@
+{% extends 'base.html' %}
+{% load l10n %}
+{% block title %}Dashboard | Banesco Tracker{% endblock %}
+
+{% block content %}
+<style>
+    @keyframes badge-pulse {
+        0%, 100% {
+            opacity: 1;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.15);
+        }
+        50% {
+            opacity: 0.7;
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.35);
+        }
+    }
+    .animate-badge-pulse {
+        animation: badge-pulse 2s infinite ease-in-out;
+    }
+</style>
+<div class="space-y-10">
+
+    <!-- Sección de Cuenta Bancaria y Liquidez (Single Source of Truth) -->
+    <div>
+        <h2 class="font-outfit font-bold text-2xl mb-5 text-slate-200 tracking-wide flex items-center space-x-2">
+            <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>Posición de Liquidez y Reconciliación</span>
+        </h2>
+        <div class="grid grid-cols-1 gap-6">
+            <!-- Tarjeta de Cuenta Bancaria Premium Glassmorphic (Ancho Completo lg:col-span-3) -->
+            <div class="glass rounded-3xl p-6 relative overflow-hidden transition-all duration-300 hover:shadow-2xl border border-emerald-500/20 bg-gradient-to-br from-slate-900/80 via-slate-900/90 to-emerald-950/25">
+                <!-- Efecto de brillo de fondo -->
+                <div class="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-emerald-500/5 blur-3xl pointer-events-none"></div>
+                <div class="absolute -left-20 -bottom-20 w-80 h-80 rounded-full bg-teal-500/5 blur-3xl pointer-events-none"></div>
+
+                <div class="flex flex-col space-y-6 relative z-10">
+                    <!-- Fila Superior: Datos de Cuenta, Selector y Acciones Integradas -->
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-800/40">
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-widest">
+                                    Fuente de Verdad
+                                </span>
+                                {% for card in bank_account.cards.all %}
+                                    {% if card.cutoff_day is None %}
+                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 uppercase tracking-widest">
+                                            TDD *{{ card.last_four }}
+                                        </span>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <h3 class="font-outfit font-extrabold text-2xl text-white mt-2">{{ bank_account.name }}</h3>
+                            <p class="text-xs text-slate-400 font-mono mt-0.5">Nro: {{ bank_account.account_number }}</p>
+                        </div>
+                        
+                        <!-- Controles y Acciones Premium -->
+                        <div class="flex flex-wrap items-center gap-4">
+                            <div class="text-left">
+                                <form method="get" action="" id="account-selector-form" class="inline-block">
+                                    <span class="text-[9px] uppercase tracking-wider block text-slate-400 font-bold mb-1">Cambiar Cuenta</span>
+                                    <select name="account_id" onchange="document.getElementById('account-selector-form').submit();"
+                                            class="bg-slate-950/90 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-200 font-bold focus:outline-none focus:ring-1 focus:ring-emerald-500/50 cursor-pointer transition-all duration-300 shadow-inner">
+                                        {% for acc in bank_accounts %}
+                                            <option value="{{ acc.id }}" {% if acc.id == bank_account.id %}selected{% endif %}>
+                                                {{ acc.name }} ({% if acc.account_type == 'savings' %}Ahorros{% else %}Corriente{% endif %})
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </form>
+                            </div>
+                            
+                            <div class="border-l border-slate-800/80 pl-4 flex flex-wrap items-center gap-3">
+                                <!-- Importar Datos -->
+                                <a href="{% url 'paste_box' %}" class="bg-gradient-to-tr from-emerald-500 to-teal-400 hover:from-emerald-600 hover:to-teal-500 text-slate-950 font-black text-xs px-3.5 py-2.5 rounded-xl shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/20 active:scale-95 transition-all duration-300 flex items-center space-x-1.5">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    <span>Importar Datos</span>
+                                </a>
+                                <!-- Registrar Pago Móvil -->
+                                <a href="{% url 'pago_movil' %}" class="bg-slate-950 border border-slate-850 hover:border-cyan-500/35 text-slate-200 font-extrabold text-xs px-3.5 py-2.5 rounded-xl transition-all duration-300 flex items-center space-x-1.5 hover:bg-slate-900 active:scale-95 shadow-inner">
+                                    <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                    </svg>
+                                    <span>Pago Móvil</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fila Central: Los Tres Saldos Desacoplados (SaaS Platform Standard) -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Saldo Real Confirmado en Cuenta -->
+                        <div class="p-4 rounded-2xl bg-slate-950/40 border border-slate-800/60 space-y-3">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Saldo Real en Cuenta</p>
+                                    <p class="text-[9px] text-slate-500">Saldo contable oficial de tus extractos</p>
+                                </div>
+                                <span class="px-2 py-0.5 rounded-md text-[9px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">CONFIRMADO</span>
+                            </div>
+                            <div class="flex items-baseline space-x-1.5">
+                                <span class="font-outfit font-black text-3xl text-white">
+                                    Bs. {{ bank_balance_ves|stringformat:".2f" }}
+                                </span>
+                            </div>
+                            
+                            <!-- Indexaciones Saldo Real -->
+                            <div class="pt-2 border-t border-slate-900/60 grid grid-cols-2 gap-2 text-[10px]">
+                                <div>
+                                    <span class="text-slate-500 block uppercase tracking-wider">USD BCV</span>
+                                    <span class="font-mono font-bold text-slate-300">$ {{ bank_balance_usd_bcv|stringformat:".2f" }}</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-500 block uppercase tracking-wider">USD Binance</span>
+                                    <span class="font-mono font-bold text-emerald-400">$ {{ bank_balance_usd_binance|stringformat:".2f" }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Deuda Consolidada Tarjetas (TDC) -->
+                        <div class="p-4 rounded-2xl bg-slate-950/40 border border-slate-800/60 space-y-3">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Deuda Consolidada TDC</p>
+                                    <p class="text-[9px] text-slate-500">Suma neta total de todas tus tarjetas</p>
+                                </div>
+                                <span class="px-2 py-0.5 rounded-md text-[9px] font-bold {% if total_tdc_debt > 0 %}bg-rose-500/10 text-rose-450 border border-rose-500/20{% else %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/20{% endif %}">
+                                    {% if total_tdc_debt > 0 %}CON DEUDA{% else %}SIN DEUDA{% endif %}
+                                </span>
+                            </div>
+                            <div class="flex items-baseline space-x-1.5">
+                                <span class="font-outfit font-black text-3xl text-white">
+                                    Bs. {{ total_tdc_debt|stringformat:".2f" }}
+                                </span>
+                            </div>
+                            
+                            <!-- Indexaciones Deuda Consolidada -->
+                            <div class="pt-2 border-t border-slate-900/60 grid grid-cols-2 gap-2 text-[10px]">
+                                <div>
+                                    <span class="text-slate-500 block uppercase tracking-wider">USD BCV</span>
+                                    <span class="font-mono font-bold text-slate-300">$ {{ total_tdc_debt_usd_bcv|stringformat:".2f" }}</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-500 block uppercase tracking-wider">USD Binance</span>
+                                    <span class="font-mono font-bold text-emerald-400">$ {{ total_tdc_debt_usd_binance|stringformat:".2f" }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Saldo Líquido Proyectado (Disponible) -->
+                        <div class="p-4 rounded-2xl border space-y-3 {% if bank_projected_balance_ves < 0 %}bg-rose-950/15 border-rose-500/20{% else %}bg-slate-950/40 border-slate-800/60{% endif %}">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Saldo Líquido Disponible</p>
+                                    <p class="text-[9px] text-slate-500">Deduciendo consumos y pagos pendientes</p>
+                                </div>
+                                {% if bank_projected_balance_ves < 0 %}
+                                    <span class="px-2 py-0.5 rounded-md text-[9px] font-bold bg-rose-500/10 text-rose-450 border border-rose-500/20 animate-pulse">ALERTA LIQUIDEZ</span>
+                                {% else %}
+                                    <span class="px-2 py-0.5 rounded-md text-[9px] font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">SALDO POSITIVO</span>
+                                {% endif %}
+                            </div>
+                            <div class="flex items-baseline space-x-1.5">
+                                <span class="font-outfit font-black text-3xl {% if bank_projected_balance_ves < 0 %}text-rose-400{% else %}text-white{% endif %}">
+                                    Bs. {{ bank_projected_balance_ves|stringformat:".2f" }}
+                                </span>
+                            </div>
+                            
+                            <!-- Indexaciones Saldo Líquido -->
+                            <div class="pt-2 border-t border-slate-900/60 grid grid-cols-2 gap-2 text-[10px]">
+                                <div>
+                                    <span class="text-slate-500 block uppercase tracking-wider">USD BCV</span>
+                                    <span class="font-mono font-bold {% if bank_projected_balance_ves < 0 %}text-rose-350{% else %}text-slate-300{% endif %}">$ {{ bank_projected_balance_usd_bcv|stringformat:".2f" }}</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-500 block uppercase tracking-wider">USD Binance</span>
+                                    <span class="font-mono font-bold {% if bank_projected_balance_ves < 0 %}text-rose-350{% else %}text-emerald-400{% endif %}">$ {{ bank_projected_balance_usd_binance|stringformat:".2f" }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fila Inferior: Desglose de Deducciones e Interactividad de Auditoría -->
+                    <div class="pt-4 border-t border-slate-800/40">
+                        <details class="group">
+                            <summary class="flex justify-between items-center text-xs font-bold text-slate-400 cursor-pointer select-none hover:text-cyan-400 transition-colors list-none">
+                                <span class="flex items-center space-x-2">
+                                    <svg class="w-4 h-4 text-cyan-400 group-open:rotate-180 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                    <span>Auditoría de Saldos y Proyecciones</span>
+                                </span>
+                                <span class="text-[9px] uppercase bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-2 py-0.5 rounded-full font-mono">Ver Fórmula</span>
+                            </summary>
+                            
+                            <div class="mt-4 p-4 rounded-2xl bg-slate-950/60 border border-slate-900/80 space-y-3.5 text-xs text-slate-300">
+                                <div class="flex justify-between items-center pb-2 border-b border-slate-900/60">
+                                    <span class="text-slate-400 flex items-center space-x-1.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                                        <span>(+) Saldo Real en Cuenta:</span>
+                                    </span>
+                                    <span class="font-mono font-bold text-slate-100">Bs. {{ bank_balance_ves|stringformat:".2f" }}</span>
+                                </div>
+                                
+                                <div class="flex justify-between items-center pb-2 border-b border-slate-900/60">
+                                    <span class="text-slate-400 flex items-center space-x-1.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                                        <span>(-) Consumos Débito (TDD) por Conciliar:</span>
+                                    </span>
+                                    <span class="font-mono font-bold text-rose-400">- Bs. {{ bank_account.unreconciled_debits|stringformat:".2f" }}</span>
+                                </div>
+                                
+                                <div class="flex justify-between items-center pb-2 border-b border-slate-900/60">
+                                    <span class="text-slate-400 flex items-center space-x-1.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                        <span>(-) Pagos Tarjetas (TDC) por Conciliar:</span>
+                                    </span>
+                                    <span class="font-mono font-bold text-amber-400">- Bs. {{ bank_account.unreconciled_tdc_payments|stringformat:".2f" }}</span>
+                                </div>
+                                
+                                <div class="flex justify-between items-center pt-1.5 font-extrabold text-sm">
+                                    <span class="text-white flex items-center space-x-1.5">
+                                        <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                        </svg>
+                                        <span>(=) Saldo Líquido Disponible:</span>
+                                    </span>
+                                    <span class="font-mono {% if bank_projected_balance_ves < 0 %}text-rose-400{% else %}text-emerald-400{% endif %}">Bs. {{ bank_projected_balance_ves|stringformat:".2f" }}</span>
+                                </div>
+                                
+                                {% if bank_projected_balance_ves < 0 %}
+                                    <div class="p-3.5 rounded-xl bg-rose-950/20 border border-rose-500/30 text-rose-400 text-[11px] leading-normal flex items-start space-x-2">
+                                        <svg class="w-5 h-5 text-rose-400 flex-shrink-0 mt-0.5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                        </svg>
+                                        <div>
+                                            <strong class="font-extrabold uppercase tracking-wide">Aviso de Liquidez Diferida:</strong>
+                                            Tu balance contable en cuenta Banesco es positivo (**Bs. {{ bank_balance_ves|stringformat:".2f" }}**). Sin embargo, has registrado **Bs. {{ bank_account.unreconciled_tdc_payments|stringformat:".2f" }}** en pagos a tarjetas de crédito que aún no han sido cargados al banco o conciliados mediante estados de cuenta oficiales (.txt), lo que genera una proyección de liquidez negativa.
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </details>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección 1: Simuladores de Consumo Hoy (Apalancamiento en tiempo real) -->
+    <div>
+        <h2 class="font-outfit font-bold text-2xl mb-5 text-slate-200 tracking-wide flex items-center space-x-2">
+            <svg class="w-6 h-6 text-emerald-400 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+            </svg>
+            <span>Simulador de Apalancamiento para Hoy</span>
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for summary in card_summaries %}
+                {% if summary.simulation %}
+                    <!-- Simulador de Tarjeta -->
+                    <div class="glass rounded-2xl p-6 relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl border-l-4 {% if summary.simulation.semaphore_color == 'green' %}border-emerald-500 neon-border-green{% elif summary.simulation.semaphore_color == 'yellow' %}border-amber-500 neon-border-yellow{% else %}border-rose-500 neon-border-red{% endif %}">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="font-outfit font-bold text-lg text-white">{{ summary.card.name }}</h3>
+                                <p class="text-xs text-slate-400">Terminación: *{{ summary.card.last_four }}</p>
+                            </div>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider animate-pulse {% if summary.simulation.semaphore_color == 'green' %}bg-emerald-500/10 text-emerald-400{% elif summary.simulation.semaphore_color == 'yellow' %}bg-amber-500/10 text-amber-400{% else %}bg-rose-500/10 text-rose-400{% endif %}">
+                                {% if summary.simulation.semaphore_color == 'green' %}Apalancamiento Máximo{% elif summary.simulation.semaphore_color == 'yellow' %}Rango Medio{% else %}Corte Próximo{% endif %}
+                            </span>
+                        </div>
+                        
+                        <!-- Texto requerido por el MVP de forma exacta -->
+                        <p class="text-slate-300 text-sm leading-relaxed mb-2">
+                            Si compras hoy con <span class="font-bold text-white">{{ summary.card.name }}</span>, tienes 
+                            <span class="inline-block px-2.5 py-0.5 rounded-lg font-extrabold text-sm {% if summary.simulation.semaphore_color == 'green' %}bg-emerald-500/20 text-emerald-400{% elif summary.simulation.semaphore_color == 'yellow' %}bg-amber-500/20 text-amber-400{% else %}bg-rose-500/20 text-rose-400{% endif %}">
+                                {{ summary.simulation.days }}
+                            </span> 
+                            días de financiamiento libre de interés. Tu fecha límite de pago será el 
+                            <span class="font-semibold text-slate-100 underline decoration-slate-600 decoration-wavy">{{ summary.simulation.payment_date|date:"d/m/Y" }}</span>.
+                        </p>
+
+                        <!-- Rango de Financiamiento del Ciclo (Quirúrgico y Premium) -->
+                        <div class="flex items-center space-x-3 text-[11px] text-slate-400 mt-3 mb-4 bg-slate-950/40 px-3 py-1.5 rounded-xl border border-slate-900/60 w-fit">
+                            <span class="text-slate-500 font-medium">Capacidad de la Tarjeta:</span>
+                            <span class="flex items-center space-x-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-rose-500/80"></span>
+                                <span>Mínimo: <strong class="text-slate-200 font-bold">{{ summary.simulation.min_financing_days }} días</strong></span>
+                            </span>
+                            <span class="text-slate-700 font-light">•</span>
+                            <span class="flex items-center space-x-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500/80"></span>
+                                <span>Máximo: <strong class="text-slate-200 font-bold">{{ summary.simulation.max_financing_days }} días</strong></span>
+                            </span>
+                            <span class="text-slate-700 font-light">•</span>
+                            <button type="button" onclick="openCapacityExplanationModal()" class="text-slate-500 hover:text-cyan-400 transition-colors focus:outline-none flex items-center space-x-1" title="Entender cómo funciona">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span class="text-[10px] font-bold underline decoration-dotted tracking-wide">¿Cómo funciona?</span>
+                            </button>
+                        </div>
+
+                        <!-- Barra de Medición de Apalancamiento Gráfico -->
+                        <div class="mt-4 mb-4 space-y-2">
+                            <div class="flex justify-between items-center text-[10px] uppercase tracking-wider font-semibold text-slate-400">
+                                <span>Planificación de Compra</span>
+                                <span class="font-mono font-bold {% if summary.simulation.cycle_elapsed_percent < 40 %}text-emerald-400{% elif summary.simulation.cycle_elapsed_percent < 80 %}text-amber-400{% else %}text-rose-400 animate-pulse{% endif %}">
+                                    {% if summary.simulation.cycle_elapsed_percent < 40 %}
+                                        Apalancamiento Óptimo — Máxima Eficiencia
+                                    {% elif summary.simulation.cycle_elapsed_percent < 80 %}
+                                        Planificación Requerida — Eficiencia Moderada
+                                    {% else %}
+                                        Corte Inminente — Evitar Compras
+                                    {% endif %}
+                                </span>
+                            </div>
+
+                            <!-- Contenedor de Barra y Aguja -->
+                            <div class="relative pt-6 pb-2">
+                                <!-- Aguja "Usted está aquí" -->
+                                <div class="absolute top-0 z-10 transition-all duration-700 ease-out cycle-elapsed-indicator" data-percent="{{ summary.simulation.cycle_elapsed_percent|unlocalize }}">
+                                    <!-- Tooltip / Badge de posición -->
+                                    <div class="relative -left-[50%] -translate-x-[4px] whitespace-nowrap bg-slate-900 border border-slate-800 text-[9px] font-bold text-slate-200 px-2 py-0.5 rounded-md shadow-[0_4px_12px_rgba(0,0,0,0.5)] flex items-center space-x-1">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+                                        <span>Día {{ summary.simulation.cycle_days_elapsed }} de {{ summary.simulation.cycle_total_days }}</span>
+                                    </div>
+                                    <!-- Flecha / Pin Indicador -->
+                                    <div class="w-0.5 h-4 bg-gradient-to-b from-cyan-400 to-cyan-500 mx-auto shadow-[0_0_8px_rgba(34,211,238,0.8)] relative">
+                                        <span class="absolute bottom-0 -left-[3.5px] w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]"></span>
+                                        <span class="absolute bottom-0 -left-[3.5px] w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping opacity-75"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Barra con Degradado Tricrómico y divisiones internas (Linear Gradient de alta precisión) -->
+                                <div class="w-full bg-slate-950/70 border border-slate-900/60 rounded-full h-3 overflow-hidden shadow-inner relative p-[1px]"
+                                     style="background: linear-gradient(to right, rgba(5, 150, 105, 0.65) 0%, rgba(16, 185, 129, 0.55) 40%, rgba(245, 158, 11, 0.45) 40%, rgba(249, 115, 22, 0.4) 80%, rgba(239, 68, 68, 0.45) 80%, rgba(225, 29, 72, 0.65) 100%);">
+                                    <!-- Líneas Divisorias Internas de Precisión -->
+                                    <div class="absolute top-0 bottom-0 border-r border-slate-900/40" style="left: 40%;"></div>
+                                    <div class="absolute top-0 bottom-0 border-r border-slate-900/40" style="left: 80%;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Etiquetas de Extremo -->
+                            <div class="flex justify-between items-center text-[9px] text-slate-500 font-semibold tracking-wider">
+                                <span>Inicio Ciclo (Día {{ summary.card.cutoff_day|add:"1" }})</span>
+                                <span>Día de Corte (Día {{ summary.card.cutoff_day }})</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between pt-3 border-t border-slate-800/80 text-xs text-slate-400">
+                            <span>Próximo corte: <strong>{{ summary.simulation.cutoff_date|date:"d/m/Y" }}</strong></span>
+                            <span>Corte: Día {{ summary.card.cutoff_day }}</span>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Sección 2: Balance de Tarjetas y Semáforos -->
+    <div>
+        <h2 class="font-outfit font-bold text-2xl mb-5 text-slate-200 tracking-wide flex items-center space-x-2">
+            <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+            </svg>
+            <span>Estado de Cuentas y Control de Pagos</span>
+        </h2>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {% for summary in card_summaries %}
+                {% if summary.card.cutoff_day is not None %}
+                    <div class="glass rounded-2xl p-6 flex flex-col justify-between border border-slate-800/60 hover:shadow-xl transition-all duration-300">
+                    <div>
+                        <!-- Header -->
+                        <div class="flex items-center justify-between mb-5">
+                            <span class="text-sm font-semibold text-slate-400">{{ summary.card.name }}</span>
+                            <span class="w-3 h-3 rounded-full shadow-lg {% if summary.payment_alert_color == 'red' %}bg-rose-500 animate-ping shadow-rose-500/50{% elif summary.payment_alert_color == 'yellow' %}bg-amber-500 animate-pulse shadow-amber-500/50{% else %}bg-emerald-500 shadow-emerald-500/50{% endif %}"></span>
+                        </div>
+                        
+                        <!-- Balances -->
+                        <div class="space-y-4 mb-6">
+                            <div>
+                                <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1">{% if summary.card.cutoff_day is not None %}Balance Pendiente{% else %}Total Consumido{% endif %}</p>
+                                <span class="font-outfit font-extrabold text-3xl text-white">Bs. {{ summary.balance_ves|stringformat:".2f" }}</span>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/40">
+                                <div>
+                                    <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">USD (Oficial BCV)</p>
+                                    <p class="text-sm font-bold text-emerald-400 font-mono">$ {{ summary.balance_usd_bcv|stringformat:".2f" }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">USD (USDT)</p>
+                                    <p class="text-sm font-bold text-teal-400 font-mono">$ {{ summary.balance_usd_binance|stringformat:".2f" }}</p>
+                                </div>
+                            </div>
+
+                            {% if summary.card.cutoff_day is not None %}
+                                <!-- Credit Card Limits Section -->
+                                <div class="pt-3 border-t border-slate-800/40 space-y-2">
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Límite Total (Bs.)</p>
+                                            <p class="text-xs font-bold text-slate-300">Bs. {{ summary.card.credit_limit|stringformat:".2f" }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Límite Disponible (Bs.)</p>
+                                            <p class="text-xs font-bold text-slate-300">Bs. {{ summary.card.available_limit|stringformat:".2f" }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- ProgressBar de Uso Rediseñado Premium -->
+                                    <div class="space-y-1.5 pt-1">
+                                        <div class="flex justify-between items-end text-[10px] font-semibold">
+                                            <div class="text-left">
+                                                <span class="text-slate-500 block uppercase tracking-wider text-[8px] mb-0.5">Consumido</span>
+                                                <span class="text-slate-300 font-bold font-mono text-xs">Bs. {{ summary.balance_ves|stringformat:".2f" }}</span>
+                                            </div>
+                                            <div class="text-right">
+                                                <span class="text-slate-500 block uppercase tracking-wider text-[8px] mb-0.5">Disponible</span>
+                                                <span class="text-emerald-400 font-bold font-mono text-xs">Bs. {{ summary.card.available_limit|stringformat:".2f" }}</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="relative w-full bg-slate-950/80 rounded-full h-5 overflow-hidden border border-slate-800/80 shadow-inner p-[2px]">
+                                            <!-- Usado (Llenado dinámico con estado de color según porcentaje) -->
+                                            <div class="bg-gradient-to-r {% if summary.credit_use_percent < 50 %}from-emerald-600 to-teal-500 shadow-[0_0_8px_rgba(20,184,166,0.3)]{% elif summary.credit_use_percent < 80 %}from-amber-600 to-orange-500 shadow-[0_0_8px_rgba(245,158,11,0.3)]{% else %}from-rose-600 to-red-500 animate-pulse shadow-[0_0_12px_rgba(239,68,68,0.4)]{% endif %} h-full rounded-full transition-all duration-700 flex items-center justify-end pr-2 credit-use-bar" 
+                                                 data-percent="{{ summary.credit_use_percent|unlocalize }}">
+                                                {% if summary.credit_use_percent > 12 %}
+                                                    <span class="text-[9px] font-extrabold text-white leading-none font-mono drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">{{ summary.credit_use_percent|stringformat:".1f" }}%</span>
+                                                {% endif %}
+                                            </div>
+                                            <!-- Si el porcentaje es muy pequeño, se muestra flotante en la zona de inicio -->
+                                            {% if summary.credit_use_percent <= 12 %}
+                                                <span class="absolute left-3 text-[9px] font-extrabold text-slate-300 font-mono top-1/2 -translate-y-1/2">{{ summary.credit_use_percent|stringformat:".1f" }}%</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="flex justify-between items-center text-[8px] text-slate-500 uppercase tracking-widest px-1">
+                                            <span>Uso de Línea</span>
+                                            <span>Límite Aprobado: Bs. {{ summary.card.credit_limit|stringformat:".2f" }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Alerta Crítica Costo Financiero de No Pago Total -->
+                                <div class="p-3 rounded-xl bg-amber-950/20 border border-amber-500/30 space-y-1.5 text-xs text-amber-400">
+                                    <div class="flex items-center justify-between font-bold">
+                                        <span class="flex items-center space-x-1">
+                                            <svg class="w-4 h-4 text-amber-400 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                            </svg>
+                                            <span>Costo Financiero de No Pago Total</span>
+                                        </span>
+                                    </div>
+                                    <p class="text-[10px] text-slate-400 leading-normal">
+                                        Si decides no pagar el saldo total del ciclo actual e inicias financiamiento, el costo proyectado es:
+                                    </p>
+                                    <div class="flex justify-between items-center pt-1 border-t border-amber-500/10">
+                                        <span class="text-[10px] text-slate-300">Interés Ordinario ({{ summary.card.interest_rate|stringformat:".2f" }}%):</span>
+                                        <span class="font-mono font-bold text-slate-200">Bs. {{ summary.total_ordinary_interest|stringformat:".2f" }}</span>
+                                    </div>
+                                    {% if summary.total_mora_interest > 0 %}
+                                        <div class="flex justify-between items-center text-rose-400 font-bold">
+                                            <span class="text-[10px]">Recargo por Mora Activa ({{ summary.card.mora_rate|stringformat:".2f" }}%):</span>
+                                            <span class="font-mono text-rose-400">Bs. {{ summary.total_mora_interest|stringformat:".2f" }}</span>
+                                        </div>
+                                    {% endif %}
+                                    <div class="flex justify-between items-center pt-1.5 border-t border-amber-500/20 font-extrabold">
+                                        <span>Costo Financiero Total:</span>
+                                        <span class="font-mono text-sm">Bs. {{ summary.total_financial_cost|stringformat:".2f" }}</span>
+                                    </div>
+                                    {% if summary.minimum_payment > 0 %}
+                                    <div class="flex justify-between items-center pt-1.5 border-t border-amber-500/20">
+                                        <span class="text-amber-400 font-bold">Pago Mínimo ({{ summary.card.minimum_payment_rate|stringformat:".2f" }}% + Int.):</span>
+                                        <span class="font-mono text-sm font-bold text-amber-400">Bs. {{ summary.minimum_payment|stringformat:".2f" }}</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Alerta neón roja si hay discrepancia de saldo -->
+                                {% if summary.available_limit_discrepancy != 0.00 %}
+                                    <div class="p-3 rounded-xl bg-rose-950/20 border border-rose-500/30 space-y-1 text-xs text-rose-400 shadow-md neon-border-red">
+                                        <div class="flex items-center space-x-1.5 font-bold">
+                                            <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                            </svg>
+                                            <span>Discrepancia de Cupo Disponible</span>
+                                        </div>
+                                        <p class="text-[10px] text-slate-400 leading-normal">
+                                            Se detectó un desbalance entre el cupo teórico y el disponible reportado manualmente por el banco (posible cargo oculto/comisión):
+                                        </p>
+                                        <div class="flex justify-between items-center pt-1 border-t border-rose-500/10 font-bold">
+                                            <span>Desviación:</span>
+                                            <span class="font-mono text-xs text-rose-400">Bs. {{ summary.available_limit_discrepancy|stringformat:".2f" }}</span>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <!-- Debit Card Recent Consumptions Section (Quirúrgica y Premium) -->
+                                <div class="pt-4 border-t border-slate-800/40 space-y-3 flex-grow">
+                                    <div class="flex justify-between items-center text-[10px] uppercase tracking-wider font-semibold text-slate-400 mb-1">
+                                        <span>Consumos Recientes</span>
+                                        <span class="font-mono text-cyan-400 font-bold">Movimientos indexados</span>
+                                    </div>
+                                    
+                                    {% with debit_txs=summary.card.transactions.all|slice:":3" %}
+                                        {% if debit_txs %}
+                                            <div class="space-y-2.5">
+                                                {% for t in debit_txs %}
+                                                    <div class="flex items-center justify-between p-2 rounded-xl bg-slate-950/30 border border-slate-900/60 hover:bg-slate-900/40 transition-colors">
+                                                        <div class="flex items-center space-x-2 min-w-0">
+                                                            <div class="w-6 h-6 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 flex-shrink-0">
+                                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 17l-4 4m0 0l-4-4m4 4V3"></path>
+                                                                </svg>
+                                                            </div>
+                                                            <div class="min-w-0">
+                                                                <p class="text-xs font-semibold text-slate-200 truncate">{{ t.description }}</p>
+                                                                <p class="text-[9px] text-slate-500 font-medium">{{ t.booking_date|date:"d \d\e M" }}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div class="text-right flex-shrink-0">
+                                                            <p class="text-xs font-bold text-slate-100 font-mono">Bs. {{ t.amount_ves|stringformat:".2f" }}</p>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            <div class="flex flex-col items-center justify-center py-7 px-4 border border-dashed border-slate-800/80 rounded-2xl bg-slate-950/20 text-center space-y-2">
+                                                <div class="w-9 h-9 rounded-full bg-slate-900/80 border border-slate-800 flex items-center justify-center text-slate-500">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0a2 2 0 01-2 2H6a2 2 0 01-2-2m16 0V9a2 2 0 00-2-2H6a2 2 0 00-2 2v4.5m15 0H3"></path>
+                                                    </svg>
+                                                </div>
+                                                <div class="space-y-0.5">
+                                                    <p class="text-xs font-bold text-slate-400">Sin consumos indexados</p>
+                                                    <p class="text-[9px] text-slate-600 leading-normal max-w-[160px] mx-auto">Las compras realizadas aparecerán aquí.</p>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    {% endwith %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Fechas y Semáforo de Alerta -->
+                    <div class="border-t border-slate-800/80 pt-4 space-y-3">
+                        {% if summary.card.cutoff_day %}
+                            <div class="flex justify-between text-xs">
+                                <span class="text-slate-400">Próximo Corte:</span>
+                                <span class="font-bold text-slate-200">{{ summary.next_cutoff_date|date:"d \d\e M" }}</span>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-slate-400">Límite de Pago:</span>
+                                <span class="font-bold text-slate-200">{{ summary.next_payment_date|date:"d \d\e M" }}</span>
+                            </div>
+                            
+                            <!-- Alerta de Semáforo -->
+                            {% if summary.days_to_pay is not None %}
+                                <div class="mt-4 p-3 rounded-xl flex items-center justify-between text-xs font-semibold {% if summary.payment_alert_color == 'red' %}bg-rose-950/30 text-rose-300 border border-rose-500/20{% elif summary.payment_alert_color == 'yellow' %}bg-amber-950/30 text-amber-300 border border-amber-500/20{% else %}bg-emerald-950/30 text-emerald-300 border border-emerald-500/20{% endif %}">
+                                    <span class="flex items-center space-x-1.5">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        <span>
+                                            {% if summary.days_to_pay < 0 %}
+                                                Pago Vencido
+                                            {% elif summary.days_to_pay == 0 %}
+                                                ¡Paga Hoy!
+                                            {% else %}
+                                                Paga en {{ summary.days_to_pay }} días
+                                            {% endif %}
+                                        </span>
+                                    </span>
+                                    <span class="uppercase tracking-widest text-[9px] font-bold">
+                                        {% if summary.payment_alert_color == 'red' %}Crítico{% elif summary.payment_alert_color == 'yellow' %}Alerta{% else %}Seguro{% endif %}
+                                    </span>
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="p-3.5 rounded-2xl bg-blue-950/20 text-blue-400 border border-blue-500/20 text-xs font-bold flex items-center justify-between shadow-lg shadow-blue-500/5">
+                                <span class="flex items-center space-x-2">
+                                    <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                                    </svg>
+                                    <span>Sistema Débito Banesco</span>
+                                </span>
+                                <span class="uppercase tracking-widest text-[9px] font-extrabold bg-blue-500/10 px-2 py-0.5 rounded-md border border-blue-500/10">Inmediato</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Sección 3: Listado de Transacciones -->
+    <div>
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
+            <h2 class="font-outfit font-bold text-2xl text-slate-200 tracking-wide flex items-center space-x-2">
+                <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                </svg>
+                <span>Historial de Movimientos</span>
+            </h2>
+            
+            <div class="flex flex-wrap items-center gap-3">
+                <!-- Selector de Pestañas Glassmorphic -->
+                <div class="flex items-center p-1 bg-slate-950/80 border border-slate-800 rounded-2xl shadow-inner">
+                    <button type="button" id="tab-cards-btn" onclick="switchHistoryTab('cards')" class="px-4 py-1.5 text-xs font-bold font-outfit rounded-xl transition-all duration-300 bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 shadow-md focus:outline-none">Consumos Tarjetas</button>
+                    <button type="button" id="tab-bank-btn" onclick="switchHistoryTab('bank')" class="px-4 py-1.5 text-xs font-bold font-outfit rounded-xl transition-all duration-300 text-slate-400 hover:text-slate-200 focus:outline-none">Cuenta Corriente</button>
+                </div>
+                
+                <a href="{% url 'paste_box' %}" class="bg-gradient-to-tr from-emerald-500 to-teal-400 hover:from-emerald-600 hover:to-teal-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/20 transition-all duration-300 flex items-center space-x-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    <span>Importar Datos</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Barra de Búsqueda y Filtros Dinámicos (SaaS Style) -->
+        <form method="get" action="" id="history-filter-form" class="glass p-4 rounded-2xl border border-slate-800/60 mb-5 flex flex-wrap items-center gap-4 bg-slate-900/40 relative z-10">
+            <input type="hidden" name="active_tab" id="filter-active-tab" value="{{ active_tab|default:'cards' }}">
+            <input type="hidden" name="account_id" value="{{ bank_account.id }}">
+            
+            <!-- Búsqueda libre -->
+            <div class="flex-grow min-w-[200px] relative">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </span>
+                <input type="text" name="search" value="{{ search_query }}" placeholder="Buscar por descripción, referencia o monto..." 
+                       class="w-full bg-slate-950/60 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 transition-all duration-300 shadow-inner">
+            </div>
+
+            <!-- Selector de Tarjetas (Solo visible/activo para la pestaña de tarjetas, pero enviado siempre) -->
+            <div class="min-w-[160px]" id="filter-card-wrapper">
+                <select name="card_id" class="w-full bg-slate-950/90 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-250 text-slate-350 focus:outline-none focus:border-emerald-500/50 cursor-pointer transition-all duration-300">
+                    <option value="">Todas las Tarjetas</option>
+                    {% for c in all_cards %}
+                        <option value="{{ c.id }}" {% if c.id|stringformat:"s" == selected_card_id %}selected{% endif %}>
+                            {{ c.name }} (*{{ c.last_four }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Selector de Fecha -->
+            <div class="min-w-[140px]">
+                <input type="date" name="date" value="{{ date_filter }}" 
+                       class="w-full bg-slate-950/90 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500/50 cursor-pointer transition-all duration-300">
+            </div>
+
+            <!-- Acciones -->
+            <div class="flex items-center gap-2">
+                <button type="submit" class="bg-gradient-to-tr from-emerald-500 to-teal-400 hover:from-emerald-600 hover:to-teal-500 text-slate-950 font-black text-xs px-4 py-2 rounded-xl active:scale-95 transition-all duration-300 flex items-center space-x-1.5 shadow-md">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                    </svg>
+                    <span>Filtrar</span>
+                </button>
+                {% if search_query or selected_card_id or date_filter %}
+                    <a href="?account_id={{ bank_account.id }}&active_tab={{ active_tab|default:'cards' }}" class="bg-rose-950/20 border border-rose-500/20 hover:bg-rose-900/35 text-rose-300 font-extrabold text-xs px-4 py-2 rounded-xl active:scale-95 transition-all duration-300 flex items-center space-x-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                        <span>Limpiar</span>
+                    </a>
+                {% endif %}
+            </div>
+        </form>
+
+        <!-- Contenedor 1: Consumos Tarjetas -->
+        <div id="tab-cards-container" class="glass rounded-2xl overflow-hidden border border-slate-800/60 shadow-2xl transition-all duration-300">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-900/80 border-b border-slate-800/80 text-xs text-slate-400 font-bold uppercase tracking-wider">
+                            <th class="px-4 py-3 whitespace-nowrap">Fecha / Hora</th>
+                            <th class="px-4 py-3 whitespace-nowrap">Tarjeta</th>
+                            <th class="px-4 py-3 min-w-[120px] whitespace-nowrap">Descripción</th>
+                            <th class="px-4 py-3 whitespace-nowrap">Monto (Bs.)</th>
+                            <th class="px-4 py-3 whitespace-nowrap">USD (BCV)</th>
+                            <th class="px-4 py-3 whitespace-nowrap">USD (USDT)</th>
+                            <th class="px-4 py-3 whitespace-nowrap">Interés (Bs.)</th>
+                            <th class="px-4 py-3 text-right whitespace-nowrap min-w-[150px]">Estado</th>
+                            <th class="px-2 py-3 w-10"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/50 text-sm text-slate-300">
+                        {% for t in transactions %}
+                            <tr class="group {% if t.amount_ves < 0 %}bg-emerald-950/15 hover:bg-emerald-900/20 border-l-2 border-emerald-500/50{% else %}hover:bg-slate-900/30{% endif %} transition-all duration-150">
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <p class="font-semibold {% if t.amount_ves < 0 %}text-emerald-300{% else %}text-slate-200{% endif %} text-xs">{{ t.booking_date|date:"d/m/Y" }}</p>
+                                    <p class="text-[10px] text-slate-500">{{ t.booking_date|date:"H:i:s" }}</p>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <button class="card-popover-btn inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-200 active:scale-95 cursor-pointer {% if t.type == 'TDC' %}bg-purple-500/10 text-purple-400 border border-purple-500/20 hover:bg-purple-500/25{% else %}bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/25{% endif %}"
+                                            data-card-name="{{ t.card.name }}"
+                                            data-card-type="{{ t.card.card_type_display }}"
+                                            data-card-color="{{ t.card.theme_color }}"
+                                            data-card-last-four="{{ t.card.last_four }}">
+                                        *{{ t.card.last_four }}
+                                    </button>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="flex items-center space-x-2">
+                                        <button class="desc-popover-btn p-1.5 rounded-lg bg-slate-900/60 border border-slate-800 text-slate-400 hover:text-emerald-400 hover:border-emerald-500/30 hover:bg-slate-850 active:scale-95 transition-all duration-200 cursor-pointer"
+                                                data-description="{{ t.description }}"
+                                                data-amount="Bs. {{ t.amount_ves|stringformat:'.2f' }}">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                            </svg>
+                                        </button>
+                                        <span class="text-[10px] text-slate-500 font-mono">Ref: {{ t.reference|default:"N/A" }}</span>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap font-mono font-bold text-xs {% if t.amount_ves < 0 %}text-emerald-400{% else %}text-slate-200{% endif %}">
+                                    Bs. {{ t.amount_ves|stringformat:".2f" }}
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-xs font-mono">
+                                    {% if t.amount_usd_bcv is not None %}
+                                        <p class="font-bold text-slate-200 text-xs">$ {{ t.amount_usd_bcv|stringformat:".2f" }}</p>
+                                        <p class="text-[9px] text-slate-500">Tasa: {{ t.exchange_rate.bcv_rate|stringformat:".4f" }}</p>
+                                    {% else %}
+                                        <span class="text-slate-500">$ --</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-xs font-mono">
+                                    {% if t.amount_usd_binance is not None %}
+                                        <p class="font-bold text-emerald-400 text-xs">$ {{ t.amount_usd_binance|stringformat:".2f" }}</p>
+                                        <p class="text-[9px] text-slate-500">Tasa USDT: {{ t.exchange_rate.binance_rate|stringformat:".4f" }}</p>
+                                    {% else %}
+                                        <span class="text-slate-500">$ --</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap font-mono text-xs">
+                                    {% if t.projected_interest > 0 %}
+                                        <span class="text-rose-500 font-bold">Bs. {{ t.projected_interest|stringformat:".2f" }}</span>
+                                    {% else %}
+                                        <span class="text-slate-500">Bs. 0.00</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-right min-w-[150px]">
+                                    {% if t.amount_ves < 0 %}
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider whitespace-nowrap bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 animate-pulse">
+                                            PAGO / ABONO
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider whitespace-nowrap {% if t.status == 'PENDIENTE' %}bg-amber-500/10 text-amber-400 border border-amber-500/20{% elif t.status == 'CORTADO_NO_PAGADO' %}bg-rose-500/10 text-rose-400 border border-rose-500/20{% else %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/20{% endif %}">
+                                            {{ t.get_status_display }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-2 py-3 text-center whitespace-nowrap w-10">
+                                    <form action="{% url 'transaction_delete' t.id %}" method="post" class="inline" onsubmit="return confirm('¿Está seguro de que desea eliminar permanentemente este movimiento de tarjeta por Bs. {{ t.amount_ves|stringformat:".2f" }}? Esta acción no se puede deshacer.');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="text-slate-500 hover:text-rose-500 opacity-0 group-hover:opacity-30 hover:group-hover:!opacity-100 transition-all duration-200 focus:outline-none p-1 rounded-md" title="Eliminar transacción manualmente">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="9" class="px-6 py-8 text-center text-slate-500">
+                                    No hay transacciones registradas. Use el <strong>Paste Box</strong> para indexar consumos.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <!-- Paginación de Tarjetas (SaaS Style) -->
+            {% if transactions.has_other_pages %}
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 bg-slate-950/40 border-t border-slate-800/40 text-xs text-slate-400">
+                    <span class="font-medium">
+                        Mostrando página <strong class="text-slate-200 font-semibold">{{ transactions.number }}</strong> de <strong class="text-slate-200 font-semibold">{{ transactions.paginator.num_pages }}</strong>
+                    </span>
+                    <div class="flex items-center gap-1.5">
+                        {% if transactions.has_previous %}
+                            <a href="?page_cards={{ transactions.previous_page_number }}&active_tab=cards{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_card_id %}&card_id={{ selected_card_id }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}&account_id={{ bank_account.id }}{% if bank_transactions.number %}&page_bank={{ bank_transactions.number }}{% endif %}" 
+                               class="bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/35 text-slate-350 hover:text-slate-200 px-3 py-1.5 rounded-xl font-bold transition-all duration-200 active:scale-95 shadow-inner">
+                                Anterior
+                            </a>
+                        {% endif %}
+                        
+                        {% for num in transactions.paginator.page_range %}
+                            {% if transactions.number == num %}
+                                <span class="bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 font-black px-3.5 py-1.5 rounded-xl shadow-md">{{ num }}</span>
+                            {% elif num > transactions.number|add:"-3" and num < transactions.number|add:"3" %}
+                                <a href="?page_cards={{ num }}&active_tab=cards{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_card_id %}&card_id={{ selected_card_id }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}&account_id={{ bank_account.id }}{% if bank_transactions.number %}&page_bank={{ bank_transactions.number }}{% endif %}" 
+                                   class="bg-slate-950/40 hover:bg-slate-900/60 border border-slate-800 hover:border-emerald-500/20 text-slate-400 hover:text-slate-200 px-3 py-1.5 rounded-xl transition-all duration-200">
+                                    {{ num }}
+                                </a>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if transactions.has_next %}
+                            <a href="?page_cards={{ transactions.next_page_number }}&active_tab=cards{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_card_id %}&card_id={{ selected_card_id }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}&account_id={{ bank_account.id }}{% if bank_transactions.number %}&page_bank={{ bank_transactions.number }}{% endif %}" 
+                               class="bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/35 text-slate-350 hover:text-slate-200 px-3 py-1.5 rounded-xl font-bold transition-all duration-200 active:scale-95 shadow-inner">
+                                Siguiente
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Contenedor 2: Cuenta Corriente (Oculto por defecto) -->
+        <div id="tab-bank-container" class="glass rounded-2xl overflow-hidden border border-slate-800/60 shadow-2xl hidden transition-all duration-300">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-900/80 border-b border-slate-800/80 text-xs text-slate-400 font-bold uppercase tracking-wider">
+                            <th class="px-4 py-3 whitespace-nowrap">Fecha / Hora</th>
+                            <th class="px-4 py-3 whitespace-nowrap">Referencia</th>
+                            <th class="px-4 py-3 min-w-[200px] whitespace-nowrap">Descripción</th>
+                            <th class="px-4 py-3 whitespace-nowrap">Monto (Bs.)</th>
+                            <th class="px-4 py-3 whitespace-nowrap">Saldo (Bs.)</th>
+                            <th class="px-4 py-3 whitespace-nowrap">USD (BCV)</th>
+                            <th class="px-4 py-3 whitespace-nowrap">USD (USDT)</th>
+                            <th class="px-4 py-3 text-right whitespace-nowrap min-w-[150px]">Conciliación</th>
+                            <th class="px-2 py-3 w-10"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/50 text-sm text-slate-300">
+                        {% for t in bank_transactions %}
+                            <tr class="group {% if t.amount_ves > 0 %}bg-emerald-950/10 hover:bg-emerald-900/15 border-l-2 border-emerald-500/40{% else %}hover:bg-slate-900/30{% endif %} transition-all duration-150">
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <p class="font-semibold text-slate-200 text-xs">{{ t.booking_date|date:"d/m/Y" }}</p>
+                                    <p class="text-[10px] text-slate-500">{{ t.booking_date|date:"H:i:s" }}</p>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap font-mono text-xs text-slate-400">
+                                    {{ t.reference }}
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="flex items-center space-x-2">
+                                        <button class="desc-popover-btn p-1.5 rounded-lg bg-slate-900/60 border border-slate-800 text-slate-400 hover:text-emerald-400 hover:border-emerald-500/30 hover:bg-slate-850 active:scale-95 transition-all duration-200 cursor-pointer"
+                                                data-description="{{ t.description }}"
+                                                data-amount="Bs. {{ t.amount_ves|stringformat:'.2f' }}">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                            </svg>
+                                        </button>
+                                        <span class="text-xs text-slate-200 font-medium truncate max-w-[200px]">{{ t.description }}</span>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap font-mono font-bold text-xs {% if t.amount_ves > 0 %}text-emerald-400{% else %}text-slate-350{% endif %}">
+                                    {% if t.amount_ves > 0 %}+{% endif %}Bs. {{ t.amount_ves|stringformat:".2f" }}
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap font-mono text-xs text-slate-400">
+                                    Bs. {{ t.balance_ves|stringformat:".2f" }}
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-xs font-mono">
+                                    {% if t.amount_usd_bcv is not None %}
+                                        <p class="font-bold text-slate-200 text-xs">$ {{ t.amount_usd_bcv|stringformat:".2f" }}</p>
+                                    {% else %}
+                                        <span class="text-slate-500">$ --</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-xs font-mono">
+                                    {% if t.amount_usd_binance is not None %}
+                                        <p class="font-bold text-teal-400 text-xs">$ {{ t.amount_usd_binance|stringformat:".2f" }}</p>
+                                    {% else %}
+                                        <span class="text-slate-500">$ --</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-right min-w-[150px]">
+                                    <div class="flex items-center justify-end space-x-1.5 flex-wrap gap-y-1">
+                                        {% if t.reconciliations.all %}
+                                            {% for r in t.reconciliations.all %}
+                                                <button class="card-popover-btn inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider transition-all duration-200 active:scale-95 cursor-pointer {% if r.card_transaction.type == 'TDC' %}bg-purple-500/10 text-purple-400 border border-purple-500/20 hover:bg-purple-500/25{% else %}bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/25{% endif %}"
+                                                        data-card-name="{{ r.card_transaction.card.name }}"
+                                                        data-card-type="{{ r.card_transaction.card.card_type_display }}"
+                                                        data-card-color="{{ r.card_transaction.card.theme_color }}"
+                                                        data-card-last-four="{{ r.card_transaction.card.last_four }}">
+                                                    *{{ r.card_transaction.card.last_four }}
+                                                </button>
+                                            {% endfor %}
+                                        {% endif %}
+                                        
+                                        {% if t.is_manual %}
+                                            <button class="verification-popover-btn inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider whitespace-nowrap bg-amber-500/15 text-amber-400 border border-amber-500/40 shadow-[0_0_10px_rgba(245,158,11,0.1)] hover:bg-amber-500/25 transition-all duration-200 cursor-pointer animate-badge-pulse"
+                                                    data-status="manual"
+                                                    data-popover-title="Verificación Manual"
+                                                    data-popover-text="Este movimiento fue registrado manualmente o por notificación y está pendiente de confirmación en el extracto bancario oficial.">
+                                                Manual 🛈
+                                            </button>
+                                        {% else %}
+                                            <button class="verification-popover-btn inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider whitespace-nowrap bg-emerald-500/15 text-emerald-400 border border-emerald-500/40 shadow-[0_0_10px_rgba(16,185,129,0.1)] hover:bg-emerald-500/25 transition-all duration-200 cursor-pointer"
+                                                    data-status="confirmed"
+                                                    data-popover-title="Confirmado Oficial"
+                                                    data-popover-text="Este movimiento ha sido conciliado oficialmente contra el estado de cuenta provisto por el banco.">
+                                                Confirmado ✓
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td class="px-2 py-3 text-center whitespace-nowrap w-10">
+                                    <form action="{% url 'bank_transaction_delete' t.id %}" method="post" class="inline" onsubmit="return confirm('¿Está seguro de que desea eliminar permanentemente este movimiento bancario por Bs. {{ t.amount_ves|stringformat:".2f" }}? Esta acción no se puede deshacer.');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="text-slate-500 hover:text-rose-500 opacity-0 group-hover:opacity-30 hover:group-hover:!opacity-100 transition-all duration-200 focus:outline-none p-1 rounded-md" title="Eliminar movimiento manualmente">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="9" class="px-6 py-8 text-center text-slate-500">
+                                    No hay movimientos de cuenta corriente registrados.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <!-- Paginación de Cuenta Corriente (SaaS Style) -->
+            {% if bank_transactions.has_other_pages %}
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 bg-slate-950/40 border-t border-slate-800/40 text-xs text-slate-400">
+                    <span class="font-medium">
+                        Mostrando página <strong class="text-slate-200 font-semibold">{{ bank_transactions.number }}</strong> de <strong class="text-slate-200 font-semibold">{{ bank_transactions.paginator.num_pages }}</strong>
+                    </span>
+                    <div class="flex items-center gap-1.5">
+                        {% if bank_transactions.has_previous %}
+                            <a href="?page_bank={{ bank_transactions.previous_page_number }}&active_tab=bank{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_card_id %}&card_id={{ selected_card_id }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}&account_id={{ bank_account.id }}{% if transactions.number %}&page_cards={{ transactions.number }}{% endif %}" 
+                               class="bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/35 text-slate-350 hover:text-slate-200 px-3 py-1.5 rounded-xl font-bold transition-all duration-200 active:scale-95 shadow-inner">
+                                Anterior
+                            </a>
+                        {% endif %}
+                        
+                        {% for num in bank_transactions.paginator.page_range %}
+                            {% if bank_transactions.number == num %}
+                                <span class="bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 font-black px-3.5 py-1.5 rounded-xl shadow-md">{{ num }}</span>
+                            {% elif num > bank_transactions.number|add:"-3" and num < bank_transactions.number|add:"3" %}
+                                <a href="?page_bank={{ num }}&active_tab=bank{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_card_id %}&card_id={{ selected_card_id }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}&account_id={{ bank_account.id }}{% if transactions.number %}&page_cards={{ transactions.number }}{% endif %}" 
+                                   class="bg-slate-950/40 hover:bg-slate-900/60 border border-slate-800 hover:border-emerald-500/20 text-slate-400 hover:text-slate-200 px-3 py-1.5 rounded-xl transition-all duration-200">
+                                    {{ num }}
+                                </a>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if bank_transactions.has_next %}
+                            <a href="?page_bank={{ bank_transactions.next_page_number }}&active_tab=bank{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_card_id %}&card_id={{ selected_card_id }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}&account_id={{ bank_account.id }}{% if transactions.number %}&page_cards={{ transactions.number }}{% endif %}" 
+                               class="bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/35 text-slate-350 hover:text-slate-200 px-3 py-1.5 rounded-xl font-bold transition-all duration-200 active:scale-95 shadow-inner">
+                                Siguiente
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+<!-- Tooltip / Popover Flotante Premium Global -->
+<div id="premium-popover" class="fixed hidden z-50 glass rounded-xl border border-slate-700/80 shadow-2xl p-4 text-xs max-w-[260px] transition-all duration-205 transform scale-95 opacity-0 pointer-events-none">
+    <!-- Flecha indicadora flotante -->
+    <div class="popover-arrow absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-900 border-t border-l border-slate-700/80 rotate-45"></div>
+    <div id="premium-popover-content" class="text-slate-200 font-medium leading-relaxed"></div>
+</div>
+
+<!-- JavaScript Vanilla para Tooltips Dinámicos sin cortes -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ajustar porcentajes de barras y agujas de forma dinámica para evitar errores de parseo CSS en el IDE
+        document.querySelectorAll('.cycle-elapsed-indicator').forEach(el => {
+            let pct = el.getAttribute('data-percent');
+            if (pct) el.style.left = pct.replace(',', '.') + '%';
+        });
+        document.querySelectorAll('.credit-use-bar').forEach(el => {
+            let pct = el.getAttribute('data-percent');
+            if (pct) el.style.width = pct.replace(',', '.') + '%';
+        });
+
+        const popover = document.getElementById('premium-popover');
+        const popoverContent = document.getElementById('premium-popover-content');
+        const arrow = popover.querySelector('.popover-arrow');
+        let activeTrigger = null;
+
+        function showPopover(trigger, contentHtml) {
+            popoverContent.innerHTML = contentHtml;
+            popover.classList.remove('hidden');
+            
+            // Forzar reflow
+            void popover.offsetHeight;
+            
+            const triggerRect = trigger.getBoundingClientRect();
+            const popoverRect = popover.getBoundingClientRect();
+            
+            // Centrar horizontalmente arriba
+            let left = triggerRect.left + (triggerRect.width / 2) - (popoverRect.width / 2);
+            let top = triggerRect.top - popoverRect.height - 10;
+            
+            // Ajustar bordes horizontales para evitar salirse de pantalla
+            if (left < 10) left = 10;
+            if (left + popoverRect.width > window.innerWidth - 10) {
+                left = window.innerWidth - popoverRect.width - 10;
+            }
+            
+            // Posicionar flecha dinámicamente respecto al trigger
+            const arrowOffset = (triggerRect.left + triggerRect.width/2) - left;
+            arrow.style.left = `${arrowOffset}px`;
+            
+            // Si no hay suficiente espacio arriba, posicionar abajo
+            if (triggerRect.top - popoverRect.height - 10 < 10) {
+                top = triggerRect.bottom + 10;
+                // Invertir flecha hacia arriba
+                arrow.classList.remove('-top-1.5', 'border-t', 'border-l');
+                arrow.classList.add('-bottom-1.5', 'border-b', 'border-r');
+            } else {
+                // Flecha hacia abajo
+                arrow.classList.remove('-bottom-1.5', 'border-b', 'border-r');
+                arrow.classList.add('-top-1.5', 'border-t', 'border-l');
+            }
+            
+            popover.style.left = `${left}px`;
+            popover.style.top = `${top}px`;
+            
+            popover.classList.remove('scale-95', 'opacity-0');
+            popover.classList.add('scale-100', 'opacity-100');
+            activeTrigger = trigger;
+        }
+
+        function hidePopover() {
+            if (popover.classList.contains('hidden')) return;
+            
+            popover.classList.remove('scale-100', 'opacity-100');
+            popover.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                if (popover.classList.contains('opacity-0')) {
+                    popover.classList.add('hidden');
+                }
+            }, 200);
+            activeTrigger = null;
+        }
+
+        // Asignar clics a los chips de tarjeta (*1234)
+        document.querySelectorAll('.card-popover-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (activeTrigger === btn) {
+                    hidePopover();
+                    return;
+                }
+                const name = btn.getAttribute('data-card-name');
+                const type = btn.getAttribute('data-card-type');
+                const color = btn.getAttribute('data-card-color');
+                const lastFour = btn.getAttribute('data-card-last-four');
+
+                const colorMap = {
+                    'gold': 'text-amber-400',
+                    'platinum': 'text-slate-400',
+                    'green': 'text-emerald-400',
+                    'blue': 'text-cyan-400',
+                    'purple': 'text-purple-400',
+                    'black': 'text-zinc-400',
+                    'silver': 'text-slate-300',
+                    'white': 'text-white',
+                    'red': 'text-rose-400'
+                };
+                const colorClass = colorMap[color] || 'text-slate-300';
+
+                const html = `
+                    <div class="space-y-1.5 text-center pointer-events-auto">
+                        <p class="text-[9px] uppercase tracking-widest text-slate-500 font-bold">Tarjeta Indexada</p>
+                        <p class="font-outfit font-extrabold text-sm ${colorClass}">${name}</p>
+                        <div class="flex items-center justify-center space-x-1.5 mt-2 bg-slate-950/60 py-1 px-2 rounded-md border border-slate-900">
+                            <span class="text-[9px] font-bold text-slate-400 uppercase">${type}</span>
+                            <span class="text-[9px] font-mono text-slate-500 font-bold">*${lastFour}</span>
+                        </div>
+                    </div>
+                `;
+                showPopover(btn, html);
+            });
+        });
+
+        // Asignar clics al icono de descripción
+        document.querySelectorAll('.desc-popover-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (activeTrigger === btn) {
+                    hidePopover();
+                    return;
+                }
+                const desc = btn.getAttribute('data-description');
+                const amount = btn.getAttribute('data-amount');
+                
+                const html = `
+                    <div class="space-y-1.5 pointer-events-auto">
+                        <p class="text-[9px] uppercase tracking-widest text-slate-500 font-bold">Detalle del Consumo</p>
+                        <p class="text-xs text-slate-105 font-semibold leading-relaxed break-words">${desc}</p>
+                        <div class="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-800/40">
+                            <span class="text-[9px] text-slate-500 font-bold">Monto:</span>
+                            <span class="text-[10px] font-black text-emerald-400 font-mono">${amount}</span>
+                        </div>
+                    </div>
+                `;
+                showPopover(btn, html);
+            });
+        });
+
+        // Asignar clics a los badges de estado/verificación
+        document.querySelectorAll('.verification-popover-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (activeTrigger === btn) {
+                    hidePopover();
+                    return;
+                }
+                const title = btn.getAttribute('data-popover-title');
+                const text = btn.getAttribute('data-popover-text');
+                const status = btn.getAttribute('data-status');
+                
+                const badgeColorClass = status === 'manual' ? 'text-amber-400' : 'text-emerald-400';
+                const headerColorClass = status === 'manual' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400';
+                
+                const iconSvg = status === 'manual' 
+                    ? `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`
+                    : `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+
+                const html = `
+                    <div class="space-y-2 pointer-events-auto p-1">
+                        <div class="flex items-center space-x-2 pb-1 border-b border-slate-800/40">
+                            <div class="w-6 h-6 rounded-lg ${headerColorClass} flex items-center justify-center">
+                                ${iconSvg}
+                            </div>
+                            <span class="font-outfit font-extrabold text-xs ${badgeColorClass}">${title}</span>
+                        </div>
+                        <p class="text-[11px] text-slate-350 leading-relaxed font-normal">${text}</p>
+                    </div>
+                `;
+                showPopover(btn, html);
+            });
+        });
+
+        // Ocultar popovers al presionar escape o hacer clic fuera
+        document.addEventListener('click', function(e) {
+            if (!popover.contains(e.target)) {
+                hidePopover();
+            }
+        });
+
+        // Lógica de pestañas de historial
+        window.switchHistoryTab = function(tabId) {
+            const cardsContainer = document.getElementById('tab-cards-container');
+            const bankContainer = document.getElementById('tab-bank-container');
+            const cardsBtn = document.getElementById('tab-cards-btn');
+            const bankBtn = document.getElementById('tab-bank-btn');
+            const filterActiveTabInput = document.getElementById('filter-active-tab');
+            const filterCardWrapper = document.getElementById('filter-card-wrapper');
+            
+            if (filterActiveTabInput) {
+                filterActiveTabInput.value = tabId;
+            }
+            
+            if (tabId === 'cards') {
+                cardsContainer.classList.remove('hidden');
+                bankContainer.classList.add('hidden');
+                if (filterCardWrapper) filterCardWrapper.classList.remove('hidden');
+                
+                cardsBtn.className = 'px-4 py-1.5 text-xs font-bold font-outfit rounded-xl transition-all duration-300 bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 shadow-md focus:outline-none';
+                bankBtn.className = 'px-4 py-1.5 text-xs font-bold font-outfit rounded-xl transition-all duration-300 text-slate-400 hover:text-slate-200 focus:outline-none';
+            } else {
+                bankContainer.classList.remove('hidden');
+                cardsContainer.classList.add('hidden');
+                if (filterCardWrapper) filterCardWrapper.classList.add('hidden');
+                
+                bankBtn.className = 'px-4 py-1.5 text-xs font-bold font-outfit rounded-xl transition-all duration-300 bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 shadow-md focus:outline-none';
+                cardsBtn.className = 'px-4 py-1.5 text-xs font-bold font-outfit rounded-xl transition-all duration-300 text-slate-400 hover:text-slate-200 focus:outline-none';
+            }
+        };
+
+        // Lógica de apertura/cierre de Modal Explicativo de Capacidad de Tarjeta
+        const capacityModal = document.getElementById('capacityExplanationModal');
+        const capacityModalContent = document.getElementById('capacityModalContent');
+
+        window.openCapacityExplanationModal = function() {
+            capacityModal.classList.remove('hidden', 'pointer-events-none');
+            // Forzar reflow para aplicar transiciones
+            void capacityModal.offsetWidth;
+            capacityModal.classList.remove('opacity-0');
+            capacityModal.classList.add('opacity-100');
+            
+            capacityModalContent.classList.remove('scale-95', 'translate-y-4', 'opacity-0');
+            capacityModalContent.classList.add('scale-100', 'translate-y-0', 'opacity-100');
+        };
+
+        window.closeCapacityExplanationModal = function() {
+            capacityModal.classList.remove('opacity-100');
+            capacityModal.classList.add('opacity-0');
+            capacityModal.classList.add('pointer-events-none');
+            
+            capacityModalContent.classList.remove('scale-100', 'translate-y-0', 'opacity-100');
+            capacityModalContent.classList.add('scale-95', 'translate-y-4', 'opacity-0');
+            
+            setTimeout(() => {
+                if (capacityModal.classList.contains('opacity-0')) {
+                    capacityModal.classList.add('hidden');
+                }
+            }, 350);
+        };
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                hidePopover();
+                closeCapacityExplanationModal();
+            }
+        });
+
+        // Activar la pestaña inicial al cargar la página
+        const initialTab = "{{ active_tab|default:'cards' }}";
+        window.switchHistoryTab(initialTab);
+    });
+</script>
+
+<!-- Modal Explicativo de Capacidad de Tarjeta (Premium Glassmorphism) -->
+<div id="capacityExplanationModal" class="fixed inset-0 z-50 flex items-center justify-center hidden transition-all duration-350 ease-out opacity-0 pointer-events-none">
+    <!-- Backdrop con desenfoque de fondo profundo -->
+    <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-md" onclick="closeCapacityExplanationModal()"></div>
+    
+    <!-- Tarjeta del Modal -->
+    <div class="glass border border-slate-800/80 rounded-3xl max-w-md w-full p-6 relative z-10 shadow-[0_25px_60px_rgba(0,0,0,0.7)] transition-all duration-350 ease-out transform scale-95 translate-y-4 opacity-0 pointer-events-auto" id="capacityModalContent">
+        <div class="flex justify-between items-start mb-5">
+            <h3 class="font-outfit font-bold text-lg text-white flex items-center space-x-2.5">
+                <div class="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <span>¿Cómo funciona el financiamiento?</span>
+            </h3>
+            <button onclick="closeCapacityExplanationModal()" class="w-8 h-8 rounded-xl bg-slate-900/60 hover:bg-slate-800/80 text-slate-400 hover:text-white flex items-center justify-center border border-slate-800/60 transition-colors focus:outline-none">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="space-y-4 text-slate-300 text-[13px] leading-relaxed">
+            <p>
+                Los días de financiamiento libre de interés representan el tiempo que tienes para pagar tus compras sin que el banco te cobre intereses. Este rango varía según el día en que realices tu compra dentro del ciclo de facturación:
+            </p>
+            
+            <div class="bg-rose-950/15 border border-rose-900/30 rounded-2xl p-4 space-y-1.5 shadow-inner">
+                <div class="flex items-center space-x-2 text-rose-400 font-bold text-xs uppercase tracking-wide">
+                    <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+                    <span>El Mínimo (Brecha de Gracia)</span>
+                </div>
+                <p class="text-xs text-slate-300">
+                    Ocurre si compras el <strong>mismo día de tu fecha de corte</strong>. La compra se factura inmediatamente y tendrás que pagarla en tu próxima fecha límite de pago (dándote el menor plazo posible, generalmente unos 27 días).
+                </p>
+            </div>
+
+            <div class="bg-emerald-950/15 border border-emerald-900/30 rounded-2xl p-4 space-y-1.5 shadow-inner">
+                <div class="flex items-center space-x-2 text-emerald-400 font-bold text-xs uppercase tracking-wide">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>El Máximo (Apalancamiento Óptimo)</span>
+                </div>
+                <p class="text-xs text-slate-300">
+                    Ocurre si compras el <strong>día siguiente de tu fecha de corte</strong> (primer día del nuevo ciclo). Esa compra no se facturará en el corte inmediato, sino en el del siguiente mes, dándote casi 30 días adicionales de financiamiento antes de tener que pagar (hasta 57 días en total).
+                </p>
+            </div>
+            
+            <div class="flex items-start space-x-2 mt-2 bg-slate-900/40 p-3 rounded-2xl border border-slate-800/40 text-[11px] text-slate-400 italic">
+                <span class="text-cyan-400 font-bold">💡 Consejo:</span>
+                <span>Para maximizar tu dinero, intenta planificar tus compras importantes justo en los días posteriores a tu fecha de corte.</span>
+            </div>
+        </div>
+        
+        <div class="mt-6 flex justify-end">
+            <button onclick="closeCapacityExplanationModal()" class="px-5 py-2.5 bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-cyan-500/10 hover:shadow-cyan-400/20 active:scale-95 transition-all duration-300">
+                ¡Entendido!
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

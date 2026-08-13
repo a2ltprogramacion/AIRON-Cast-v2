@@ -1,0 +1,11 @@
+Tarjeta          Fecha Proc Descripcin                                   Monto                      
+4966381609112048 12/05/2026 COMER SPORT BOLTIUM SAN D                                      +128.772,73 
+                 14/05/2026 PAGO HOMEBANKIN                                               -30.000,00
+                 18/05/2026 QUESOS Y CHARC WILMER VIL                                     +10.113,77
+                 18/05/2026 MERCADOS GRANJA                                                +6.448,22
+                 19/05/2026 PAGO HOMEBANKIN                                               -50.000,00
+                 21/05/2026 MERCADOS GRANJA                                               +47.034,43
+                 22/05/2026 COMERCIALIZADORA VIRGEN                                        +8.638,00
+                 22/05/2026 EL MARACUCHO VE 88, C.A                                          +526,87
+                 22/05/2026 MARYURY BARILLAS ROJAS                                         +4.140,74
+                 22/05/2026 EL MARACUCHO VE 88, C.A                                          +530,50

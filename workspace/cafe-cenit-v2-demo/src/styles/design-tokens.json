@@ -1,0 +1,30 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "generated_by": "ux-ui_specialist",
+    "project_slug": "cafe-cenit-v2-demo",
+    "adr_ref": "ADR-001"
+  },
+  "colors": {
+    "bg_cream": "#F5EFE6",
+    "bg_paper": "#FBF7F1",
+    "roast_900": "#3B2417",
+    "roast_700": "#5C3A24",
+    "roast_500": "#8B5A3C",
+    "ember_500": "#D97742",
+    "ember_600": "#B85F30"
+  },
+  "typography": {
+    "heading": "Fraunces",
+    "body": "Inter"
+  },
+  "spacing": {
+    "section_y": "4rem",
+    "container_x": "1.5rem",
+    "card_padding": "2rem"
+  },
+  "radius": {
+    "md": "0.75rem",
+    "xl": "1.5rem"
+  }
+}

@@ -1,0 +1,11 @@
+# Feedback Log — Café Cenit
+# Formato: lista de entradas YAML
+# Cada entrada: {date, task, agent, severity, message, recurrence_count, resolved}
+
+- date: 2026-06-06
+  task: T-01
+  agent: ux-ui_specialist
+  severity: info
+  message: "Paleta cálida confirmada con el Operador del cliente. Arquetipo Modern Clinic + acentos artesanales."
+  recurrence_count: 0
+  resolved: true

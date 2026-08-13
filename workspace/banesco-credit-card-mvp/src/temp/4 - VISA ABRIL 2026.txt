@@ -1,0 +1,19 @@
+Tarjeta          Fecha Proc Descripci�n                                   Monto                      
+4966381609112048 14/03/2026 COMER SPORT BOLTIUM SAN D                                     +58.877,46 
+                 14/03/2026 COMER SPORT BOLTIUM SAN D                                        +817,56 
+                 14/03/2026 QUESOS Y CHARCUTERIA WILM                                        +797,87 
+                 14/03/2026 COMERCIALIZADORA VIRGEN D                                      +5.352,00 
+                 14/03/2026 MARYURY BARILLAS ROJAS FP                                      +5.239,53 
+                 18/03/2026 BARILLAS ROJAS MARYURY                                         +4.827,92 
+                 18/03/2026 FERRECENTRO 214 CA                                               +262,00 
+                 18/03/2026 FARMACIA LA ENTRADA RIO A                                      +6.443,08 
+                 20/03/2026 JOSE RAMON CONTRERAS CONT                                      +9.696,22 
+                 20/03/2026 DUTU WU                                                        +2.299,48 
+                 21/03/2026 QUESOS Y CHARCUTERIA WILM                                        +910,50 
+                 21/03/2026 COMERCIALIZADORA VIRGEN D                                      +4.691,00 
+                 23/03/2026 PAGO HOMEBANKIN                                               -45.000,00 
+                 03/04/2026 BARILLAS ROJAS MARYURY                                        +11.089,52 
+                 03/04/2026 QUESOS Y CHARCUTERIA WILM                                        +948,12 
+                 10/04/2026 COMERCIALIZADORA VIRGEN D                                      +4.354,00 
+                 10/04/2026 PAGO HOMEBANKIN                                               -20.000,00 
+                 11/04/2026 COMER SPORT BOLTIUM SAN D                                     +27.308,25 

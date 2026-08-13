@@ -1,0 +1,63 @@
+{
+  "colors": {
+    "primary": {
+      "gold": {
+        "gradient": "from-amber-600 via-yellow-600 to-yellow-500",
+        "text": "text-slate-950"
+      },
+      "platinum": {
+        "gradient": "from-slate-800 via-slate-700 to-slate-600",
+        "text": "text-white"
+      },
+      "green": {
+        "gradient": "from-emerald-700 via-teal-800 to-emerald-500",
+        "text": "text-white"
+      },
+      "blue": {
+        "gradient": "from-blue-950 via-teal-900 to-cyan-900",
+        "text": "text-white"
+      },
+      "purple": {
+        "gradient": "from-slate-900 via-purple-950 to-indigo-900",
+        "text": "text-white"
+      },
+      "black": {
+        "gradient": "from-slate-950 via-slate-900 to-zinc-900",
+        "text": "text-white"
+      },
+      "silver": {
+        "gradient": "from-slate-400 via-slate-350 to-slate-200",
+        "text": "text-slate-950"
+      },
+      "white": {
+        "gradient": "from-slate-100 via-slate-50 to-white",
+        "text": "text-slate-950",
+        "border": "border-slate-300/40"
+      },
+      "red": {
+        "gradient": "from-rose-900 via-red-950 to-rose-800",
+        "text": "text-white"
+      }
+    },
+    "status": {
+      "safe": "text-emerald-400",
+      "warning": "text-yellow-400",
+      "danger": "text-rose-400"
+    },
+    "backgrounds": {
+      "main": "bg-slate-950",
+      "card": "bg-slate-900/50",
+      "input": "bg-slate-800"
+    }
+  },
+  "typography": {
+    "font_family": "Inter, sans-serif",
+    "headings": "font-bold tracking-tight",
+    "body": "font-medium"
+  },
+  "effects": {
+    "blur": "backdrop-blur-md",
+    "shadow": "shadow-xl shadow-black/50",
+    "border_radius": "rounded-2xl"
+  }
+}

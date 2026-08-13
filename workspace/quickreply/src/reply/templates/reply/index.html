@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickReply — Respuestas rápidas para Marketplace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#ecfeff', 100: '#cffafe', 200: '#a5f3fc',
+                            300: '#67e8f9', 400: '#22d3ee', 500: '#06b6d4',
+                            600: '#0891b2', 700: '#0e7490', 800: '#155e75', 900: '#164e63',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+
+        pre,
+        code,
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+        }
+
+        .animate-slide-up {
+            animation: slideUp 0.2s ease-out;
+        }
+
+        .animate-fade-out {
+            animation: fadeOut 0.3s ease-out forwards;
+        }
+
+        .card-enter {
+            animation: slideUp 0.12s ease-out;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #3f3f46;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #52525b;
+        }
+
+        .expand-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.25s ease-out, opacity 0.2s ease-out;
+            opacity: 0;
+        }
+
+        .expand-body.open {
+            max-height: 2000px;
+            opacity: 1;
+            transition: max-height 0.35s ease-in, opacity 0.2s ease-in;
+        }
+
+        .chevron {
+            transition: transform 0.2s ease;
+        }
+
+        .chevron.open {
+            transform: rotate(180deg);
+        }
+
+        .tab-active {
+            border-bottom: 2px solid #0891b2;
+            color: #22d3ee;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+    </style>
+</head>
+
+<body class="bg-zinc-950 text-zinc-100 min-h-screen">
+
+    <div id="toast" class="fixed bottom-6 right-6 z-50 hidden">
+        <div class="flex items-center gap-3 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-2xl font-medium">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <span id="toast-message">Copiado al portapapeles</span>
+        </div>
+    </div>
+
+    <header class="sticky top-0 z-40 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-base font-semibold text-white leading-tight">QuickReply</h1>
+                    <p class="text-xs text-zinc-500 leading-tight">Respuestas rápidas</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4 text-xs text-zinc-500">
+                <span id="stats-products" class="hidden sm:block">
+                    <span class="text-zinc-400" id="product-count">{{ total_productos|default:0 }}</span> productos
+                </span>
+                <span class="hidden sm:block text-zinc-700">|</span>
+                <span id="stats-templates" class="hidden sm:block">
+                    <span class="text-zinc-400" id="template-count">{{ total_templates|default:0 }}</span> templates
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+        <!-- Upload Excel -->
+        <section id="upload-section">
+            <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <div class="flex-1">
+                        <h2 class="text-sm font-semibold text-white mb-1">Actualizar precios</h2>
+                        <p class="text-xs text-zinc-500">
+                            Sube el archivo <code
+                                class="font-mono text-brand-400 bg-zinc-950 px-1.5 py-0.5 rounded">quickreply_precios.xlsx</code>
+                            con la hoja <strong class="text-zinc-300">G3 Multi</strong>.
+                        </p>
+                    </div>
+                    <form id="upload-form" action="/upload/" method="post" enctype="multipart/form-data"
+                        class="flex items-center gap-3">
+                        {% csrf_token %}
+                        <label class="relative cursor-pointer">
+                            <input type="file" name="archivo_excel" accept=".xlsx,.xls" class="sr-only" id="file-input"
+                                onchange="document.getElementById('upload-form').submit()">
+                            <span
+                                class="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-500 text-white text-sm font-medium rounded-xl transition-colors cursor-pointer">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                </svg>
+                                Subir Excel
+                            </span>
+                        </label>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Django Messages -->
+        {% if messages %}
+        <div class="space-y-2" id="django-messages">
+            {% for message in messages %}
+            <div class="flex items-center gap-2 px-4 py-3 rounded-xl text-sm animate-slide-up
+                {% if message.tags == 'success' %}bg-emerald-900/50 border border-emerald-700 text-emerald-300
+                {% elif message.tags == 'error' %}bg-red-900/50 border border-red-700 text-red-300
+                {% elif message.tags == 'warning' %}bg-amber-900/50 border border-amber-700 text-amber-300
+                {% elif message.tags == 'info' %}bg-zinc-800 border border-zinc-700 text-zinc-300
+                {% else %}bg-brand-900/50 border border-brand-700 text-brand-300{% endif %}">
+                {% if message.tags == 'success' %}<svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                {% elif message.tags == 'error' %}<svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                {% elif message.tags == 'warning' %}<svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                {% elif message.tags == 'info' %}<svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {% endif %}
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Import Messages Section -->
+        <section id="import-section">
+            <div class="bg-zinc-900 border border-zinc-800 rounded-2xl">
+                <div class="px-5 pt-4 mb-5 pb-0 flex items-center justify-between">
+                    <h2 class="text-sm font-semibold text-white">Agregar mensajes</h2>
+                    <button type="button" onclick="toggleImportSection()"
+                        class="text-zinc-500 hover:text-zinc-300 transition-colors text-xs flex items-center gap-1.5 py-1"
+                        id="import-toggle-btn">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                        <span id="import-toggle-text" class="leading-none">Mostrar</span>
+                    </button>
+                </div>
+
+                <div id="import-body" class="hidden">
+                    <div class="border-b border-zinc-800 px-5 flex gap-1 mt-3">
+                        <button type="button" onclick="switchImportTab('individual')" id="tab-individual"
+                            class="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-brand-400 transition-colors tab-active">
+                            Individual
+                        </button>
+                        <button type="button" onclick="switchImportTab('bulk')" id="tab-bulk"
+                            class="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-brand-400 transition-colors">
+                            Masivo
+                        </button>
+                        <button type="button" onclick="switchImportTab('manage')" id="tab-manage"
+                            class="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-brand-400 transition-colors">
+                            Ver / Editar
+                        </button>
+                    </div>
+
+                    <div class="p-5 space-y-4">
+
+                        <!-- TAB: Individual -->
+                        <div id="panel-individual">
+                            <form action="/import/individual/" method="post" id="form-individual">
+                                {% csrf_token %}
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label class="block text-xs font-medium text-zinc-400 mb-1.5">Titulo *</label>
+                                        <input type="text" name="titulo" required placeholder="Ventiladores recargables"
+                                            maxlength="300"
+                                            class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-zinc-600 outline-none focus:border-brand-500 transition-colors">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-zinc-400 mb-1.5">Categoria</label>
+                                        <input type="text" name="categoria" placeholder="Ventiladores" maxlength="200"
+                                            class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-zinc-600 outline-none focus:border-brand-500 transition-colors">
+                                    </div>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="block text-xs font-medium text-zinc-400 mb-1.5">Contenido * <span
+                                            class="text-zinc-600">(usa {CODIGO_usd} y {CODIGO_bcv} para
+                                            precios)</span></label>
+                                    <textarea name="contenido" required rows="6"
+                                        placeholder="Hola 👋&#10;&#10;✅ Sí, disponibles...&#10;&#10;{F012_usd} (Divisas) | {F012_bcv} (BCV)"
+                                        class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none focus:border-brand-500 transition-colors font-mono leading-relaxed"></textarea>
+                                </div>
+                                <button type="submit"
+                                    class="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 text-white text-sm font-medium rounded-xl transition-colors">
+                                    <svg class="w-4 h-4 mr-1.5 inline" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    Agregar mensaje
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- TAB: Bulk -->
+                        <div id="panel-bulk" class="hidden">
+                            <div class="mb-3">
+                                <p class="text-xs text-zinc-500 mb-2">Selecciona el formato y pega tu contenido. Los
+                                    mensajes se crean o actualizan si el título ya existe.</p>
+                                <div class="flex gap-3 flex-wrap">
+                                    <label class="flex items-center gap-1.5 cursor-pointer text-xs text-zinc-400">
+                                        <input type="radio" name="bulk-format" value="markdown" checked
+                                            class="accent-brand-500"> Markdown
+                                    </label>
+                                    <label class="flex items-center gap-1.5 cursor-pointer text-xs text-zinc-400">
+                                        <input type="radio" name="bulk-format" value="json" class="accent-brand-500">
+                                        JSON
+                                    </label>
+                                    <label class="flex items-center gap-1.5 cursor-pointer text-xs text-zinc-400">
+                                        <input type="radio" name="bulk-format" value="plain" class="accent-brand-500">
+                                        Texto plano
+                                    </label>
+                                </div>
+                            </div>
+
+                            <form id="form-bulk">
+                                {% csrf_token %}
+                                <textarea name="texto" id="bulk-texto" rows="12" placeholder=""
+                                    class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none focus:border-brand-500 transition-colors font-mono leading-relaxed mb-3"></textarea>
+                                <div class="flex gap-3 flex-wrap items-center">
+                                    <button type="button" onclick="previewBulk()"
+                                        class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm font-medium rounded-xl transition-colors">
+                                        <svg class="w-4 h-4 mr-1.5 inline" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                        Previsualizar
+                                    </button>
+                                    <button type="submit"
+                                        class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-xl transition-colors">
+                                        <svg class="w-4 h-4 mr-1.5 inline" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                                        </svg>
+                                        Importar
+                                    </button>
+                                </div>
+                            </form>
+
+                            <!-- Preview panel -->
+                            <div id="bulk-preview"
+                                class="hidden mt-4 p-4 bg-zinc-950 border border-zinc-700 rounded-xl">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h4 class="text-xs font-semibold text-zinc-400 uppercase tracking-wide">Vista previa
+                                    </h4>
+                                    <span id="bulk-preview-count" class="text-xs text-brand-400"></span>
+                                </div>
+                                <div id="bulk-preview-list" class="space-y-2 max-h-64 overflow-y-auto"></div>
+                            </div>
+                        </div>
+
+                        <!-- TAB: Manage -->
+                        <div id="panel-manage" class="hidden">
+                            <div class="mb-3">
+                                <div class="flex items-center gap-3">
+                                    <input type="text" id="manage-search" placeholder="Buscar mensaje..."
+                                        class="flex-1 bg-zinc-950 border border-zinc-700 rounded-xl px-4 py-2 text-sm text-white placeholder-zinc-600 outline-none focus:border-brand-500 transition-colors"
+                                        oninput="loadTemplates()">
+                                    <button onclick="loadTemplates()"
+                                        class="px-3 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="manage-list" class="space-y-2 max-h-96 overflow-y-auto">
+                                <div class="text-center py-8 text-zinc-600 text-sm">Cargando...</div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search -->
+        <section id="search-section">
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <svg class="w-5 h-5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+                <input type="text" id="search-input"
+                    placeholder="Buscar mensaje... (ej: ventilador, bomba, iluminacion)" autocomplete="off"
+                    spellcheck="false"
+                    class="w-full bg-zinc-900 border-2 border-zinc-800 focus:border-brand-600 rounded-2xl pl-12 pr-12 py-4 text-base text-white placeholder-zinc-500 outline-none transition-colors">
+                <button id="clear-search" type="button"
+                    class="absolute inset-y-0 right-0 pr-4 flex items-center text-zinc-500 hover:text-zinc-300 transition-colors hidden"
+                    onclick="clearSearch()">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div id="search-status" class="mt-2 text-xs text-zinc-600 px-1 hidden"></div>
+        </section>
+
+        <!-- Results -->
+        <section id="results-section">
+            <div id="results-container" class="space-y-2">
+                <div id="empty-state" class="flex flex-col items-center justify-center py-20 text-center">
+                    <div
+                        class="w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center mb-4">
+                        <svg class="w-8 h-8 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-zinc-400 font-medium mb-1">Sin mensajes disponibles</h3>
+                    <p class="text-zinc-600 text-sm max-w-xs">Escribe en el buscador para encontrar mensajes.</p>
+                </div>
+                <div id="loading-state" class="hidden flex flex-col items-center justify-center py-16">
+                    <div class="flex gap-2 mb-4">
+                        <div class="w-2.5 h-2.5 bg-brand-500 rounded-full animate-bounce" style="animation-delay:0ms">
+                        </div>
+                        <div class="w-2.5 h-2.5 bg-brand-500 rounded-full animate-bounce" style="animation-delay:150ms">
+                        </div>
+                        <div class="w-2.5 h-2.5 bg-brand-500 rounded-full animate-bounce" style="animation-delay:300ms">
+                        </div>
+                    </div>
+                    <p class="text-zinc-500 text-sm">Buscando...</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="border-t border-zinc-900 mt-12 py-6">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <p class="text-xs text-zinc-700">QuickReply — Software de despacho de mensajes</p>
+            <p class="text-xs text-zinc-700">Tokens: <code class="font-mono text-zinc-600">{CODIGO_usd}</code> y <code
+                    class="font-mono text-zinc-600">{CODIGO_bcv}</code></p>
+        </div>
+    </footer>
+
+    <script>
+        const searchInput = document.getElementById('search-input');
+        const clearBtn = document.getElementById('clear-search');
+        const resultsContainer = document.getElementById('results-container');
+        const emptyState = document.getElementById('empty-state');
+        const loadingState = document.getElementById('loading-state');
+        const searchStatus = document.getElementById('search-status');
+        let searchTimeout = null;
+
+        // Toast
+        function showToast(message = 'Copiado al portapapeles') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').textContent = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('animate-fade-out');
+                setTimeout(() => { toast.classList.add('hidden'); toast.classList.remove('animate-fade-out'); }, 300);
+            }, 2000);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        const bulkPlaceholders = {
+            markdown: `# Ventiladores recargables
+Categoria: Ventiladores
+
+✅ Hola, disponibles en {F012_usd} USD
+
+{Detalle del producto}
+
+---
+Categoria: Bombas
+
+Disponibles en {B005_usd} USD`,
+
+            json: `[
+  {
+    "titulo": "Ventiladores recargables",
+    "categoria": "Ventiladores",
+    "contenido": "✅ Hola, disponibles en {F012_usd} USD\\n\\n{Detalle del producto}"
+  },
+  {
+    "titulo": "Bombas de agua",
+    "categoria": "Bombas",
+    "contenido": "Disponibles en {B005_usd} USD"
+  }
+]`,
+
+            plain: `Titulo: Ventiladores recargables
+Categoria: Ventiladores
+Contenido: Hola, disponibles en {F012_usd} USD
+
+---
+Titulo: Bombas de agua
+Categoria: Bombas
+Contenido: Disponibles en {B005_usd} USD`
+        };
+
+        function updateBulkPlaceholder() {
+            const formato = document.querySelector('input[name="bulk-format"]:checked').value;
+            const ta = document.getElementById('bulk-texto');
+            ta.placeholder = bulkPlaceholders[formato] || '';
+        }
+
+        // Import section toggle
+        function toggleImportSection() {
+            const body = document.getElementById('import-body');
+            const btnText = document.getElementById('import-toggle-text');
+            const isHidden = body.style.display === 'none' || body.classList.contains('hidden');
+            if (isHidden) {
+                body.style.display = '';
+                body.classList.remove('hidden');
+                btnText.textContent = 'Ocultar';
+                loadTemplatesIfShowing();
+            } else {
+                body.style.display = 'none';
+                btnText.textContent = 'Mostrar';
+            }
+        }
+
+        // Tab switching
+        function switchImportTab(tab) {
+            ['individual', 'bulk', 'manage'].forEach(t => {
+                document.getElementById('panel-' + t).classList.toggle('hidden', t !== tab);
+                document.getElementById('tab-' + t).classList.toggle('tab-active', t === tab);
+            });
+            if (tab === 'manage') loadTemplatesIfShowing();
+        }
+
+        // Bulk preview via AJAX
+        async function previewBulk() {
+            const texto = document.getElementById('bulk-texto').value.trim();
+            const formato = document.querySelector('input[name="bulk-format"]:checked').value;
+            if (!texto) { showToast('Ingresa contenido primero'); return; }
+
+            try {
+                const resp = await fetch('/import/bulk/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRF() },
+                    body: JSON.stringify({ texto, formato }),
+                });
+                const data = await resp.json();
+                const preview = document.getElementById('bulk-preview');
+                const list = document.getElementById('bulk-preview-list');
+                const count = document.getElementById('bulk-preview-count');
+
+                if (data.total === 0 && data.errores && data.errores.length > 0) {
+                    showToast('Error: ' + data.errores[0]);
+                    return;
+                }
+
+                count.textContent = data.total + ' mensaje' + (data.total !== 1 ? 's' : '') + ' detectados';
+                list.innerHTML = '';
+
+                (data.mensajes || []).forEach(msg => {
+                    const el = document.createElement('div');
+                    el.className = 'flex items-start gap-2 text-xs';
+                    el.innerHTML = `<span class="${msg.creado ? 'text-emerald-400' : 'text-amber-400'} flex-shrink-0">${msg.creado ? '+' : '~'}</span><div class="min-w-0"><div class="text-white font-medium truncate">${escapeHtml(msg.titulo)}</div><div class="text-zinc-500 truncate">${escapeHtml(msg.categoria || 'sin categoria')}</div></div>`;
+                    list.appendChild(el);
+                });
+
+                preview.classList.remove('hidden');
+            } catch (e) {
+                showToast('Error al previsualizar');
+            }
+        }
+
+        // Bulk form submit
+        document.getElementById('form-bulk').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const texto = document.getElementById('bulk-texto').value.trim();
+            const formato = document.querySelector('input[name="bulk-format"]:checked').value;
+            if (!texto) return;
+
+            try {
+                const resp = await fetch('/import/bulk/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRF() },
+                    body: JSON.stringify({ texto, formato }),
+                });
+                const data = await resp.json();
+                if (data.errores && data.errores.length > 0) {
+                    showToast('Errores: ' + data.errores[0]);
+                } else {
+                    showToast(data.total + ' mensaje' + (data.total !== 1 ? 's' : '') + ' importado' + (data.total !== 1 ? 's' : '') + ' correctamente');
+                    document.getElementById('bulk-texto').value = '';
+                    document.getElementById('bulk-preview').classList.add('hidden');
+                    updateTemplateCount();
+                    loadTemplatesIfShowing();
+                }
+            } catch (e) {
+                showToast('Error al importar');
+            }
+        });
+
+        // Load templates for manage tab
+        let templatesLoaded = false;
+        function loadTemplatesIfShowing() {
+            if (!document.getElementById('panel-manage').classList.contains('hidden')) {
+                loadTemplates();
+                templatesLoaded = true;
+            }
+        }
+
+        async function loadTemplates() {
+            const q = document.getElementById('manage-search').value.trim();
+            const container = document.getElementById('manage-list');
+            container.innerHTML = '<div class="text-center py-8 text-zinc-600 text-sm">Cargando...</div>';
+            try {
+                const url = q ? '/api/templates/?q=' + encodeURIComponent(q) : '/api/templates/';
+                const resp = await fetch(url);
+                const data = await resp.json();
+                if (data.resultados.length === 0) {
+                    container.innerHTML = '<div class="text-center py-8 text-zinc-600 text-sm">Sin resultados</div>';
+                    return;
+                }
+                container.innerHTML = '';
+                data.resultados.forEach(t => {
+                    const card = document.createElement('div');
+                    card.className = 'flex items-start gap-3 p-3 bg-zinc-950 border border-zinc-800 rounded-xl group';
+                    card.innerHTML = `
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-sm font-medium text-white truncate">${escapeHtml(t.titulo)}</span>
+                                <span class="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 flex-shrink-0">${escapeHtml(t.categoria || '-')}</span>
+                            </div>
+                            <pre class="text-xs text-zinc-500 font-mono truncate">${escapeHtml(t.contenido.substring(0, 80))}...</pre>
+                            <div class="text-xs text-zinc-700 mt-1">ID: ${t.id} | Usos: ${t.copy_count || 0}</div>
+                        </div>
+                        <button onclick="deleteTemplate(${t.id}, '${escapeHtml(t.titulo).replace(/'/g, "\\'")}')"
+                            class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-zinc-600 hover:text-red-400 hover:bg-red-900/30 transition-colors opacity-0 group-hover:opacity-100"
+                            title="Eliminar">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+                        <button onclick="editTemplate(${t.id}, '${escapeHtml(t.titulo).replace(/'/g, "\\'")}', '${escapeHtml(t.categoria || '').replace(/'/g, "\\'")}', \`${escapeHtml(t.contenido.replace(/`/g, '\\`')).replace(/\$/g, '\\$')}\`)"
+                            class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-zinc-600 hover:text-brand-400 hover:bg-brand-900/30 transition-colors opacity-0 group-hover:opacity-100"
+                            title="Editar">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        </button>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (e) {
+                container.innerHTML = '<div class="text-center py-8 text-red-400 text-sm">Error al cargar</div>';
+            }
+        }
+
+        async function deleteTemplate(id, titulo) {
+            if (!confirm('Eliminar "' + titulo + '"?')) return;
+            try {
+                const fd = new FormData();
+                fd.append('csrfmiddlewaretoken', getCSRF());
+                const resp = await fetch('/delete/' + id + '/', { method: 'POST', body: fd, headers: { 'X-CSRFToken': getCSRF() } });
+                showToast('Mensaje eliminado');
+                loadTemplates();
+                updateTemplateCount();
+                performSearch(searchInput.value.trim());
+            } catch (e) {
+                showToast('Error al eliminar');
+            }
+        }
+
+        let editingId = null;
+        function editTemplate(id, titulo, categoria, contenido) {
+            editingId = id;
+            document.getElementById('edit-id').value = id;
+            document.getElementById('edit-titulo').value = titulo;
+            document.getElementById('edit-categoria').value = categoria;
+            document.getElementById('edit-contenido').value = contenido;
+            document.getElementById('edit-modal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-modal').classList.add('hidden');
+            editingId = null;
+        }
+
+        document.getElementById('form-edit').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!editingId) return;
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', getCSRF());
+            formData.append('titulo', document.getElementById('edit-titulo').value);
+            formData.append('categoria', document.getElementById('edit-categoria').value);
+            formData.append('contenido', document.getElementById('edit-contenido').value);
+            try {
+                const resp = await fetch('/edit/' + editingId + '/', { method: 'POST', body: formData });
+                if (resp.ok) {
+                    showToast('Mensaje actualizado');
+                    closeEditModal();
+                    loadTemplates();
+                    updateTemplateCount();
+                    if (searchInput.value.trim()) performSearch(searchInput.value.trim());
+                } else {
+                    showToast('Error al actualizar');
+                }
+            } catch (e) {
+                showToast('Error al actualizar');
+            }
+        });
+
+        // CSRF helper
+        function getCSRF() {
+            return document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : '';
+        }
+
+        // Update template count in header
+        async function updateTemplateCount() {
+            try {
+                const resp = await fetch('/api/templates/');
+                const data = await resp.json();
+                const el = document.getElementById('template-count');
+                if (el) el.textContent = data.total;
+            } catch (e) { }
+        }
+
+        // Search results
+        function renderCards(resultados) {
+            const container = document.getElementById('results-container');
+            container.innerHTML = '';
+            if (resultados.length === 0) {
+                container.innerHTML = '<div class="flex flex-col items-center justify-center py-20 text-center"><div class="w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center mb-4"><svg class="w-8 h-8 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><h3 class="text-zinc-400 font-medium mb-1">No se encontraron resultados</h3><p class="text-zinc-600 text-sm">Intenta con otra palabra clave.</p></div>';
+                return;
+            }
+            resultados.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'card-enter bg-zinc-900 border border-zinc-800 rounded-xl';
+                card.style.animationDelay = index * 25 + 'ms';
+                const categoria = item.categoria ? '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-brand-900/60 text-brand-300 border border-brand-800 mr-2">' + escapeHtml(item.categoria) + '</span>' : '';
+                const rawContent = item.contenido.replace(/`/g, '\\`').replace(/\$/g, '\\$');
+                card.innerHTML = '<div class="flex items-center px-4 py-3 gap-2"><button type="button" onclick="toggleCard(' + item.id + ')" class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 transition-colors" title="Expandir"><svg id="chev-' + item.id + '" class="chev w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></button><div class="flex-1 min-w-0"><h3 class="text-sm font-semibold text-white truncate leading-tight">' + escapeHtml(item.titulo) + '</h3>' + categoria + '</div><button type="button" onclick="copyMessage(`' + rawContent + '`, this)" class="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-medium rounded-lg transition-all active:scale-95"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>Copiar</button></div><div id="body-' + item.id + '" class="expand-body"><div class="px-4 pb-4 pt-1 border-t border-zinc-800/50"><pre class="font-mono text-xs text-zinc-300 whitespace-pre-wrap break-words leading-relaxed">' + escapeHtml(item.contenido) + '</pre></div></div>';
+                container.appendChild(card);
+            });
+        }
+
+        function toggleCard(id) {
+            const body = document.getElementById('body-' + id);
+            const chev = document.getElementById('chev-' + id);
+            if (!body) return;
+            const isOpen = body.classList.contains('open');
+            body.classList.toggle('open', !isOpen);
+            chev.classList.toggle('open', !isOpen);
+        }
+
+        async function copyMessage(text, btn) {
+            try {
+                await navigator.clipboard.writeText(text);
+                const orig = btn.innerHTML;
+                btn.innerHTML = '<svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>Copiado';
+                btn.classList.remove('bg-zinc-800', 'hover:bg-zinc-700', 'text-zinc-300');
+                btn.classList.add('bg-emerald-600', 'hover:bg-emerald-500', 'text-white');
+                setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-500', 'text-white'); btn.classList.add('bg-zinc-800', 'hover:bg-zinc-700', 'text-zinc-300'); }, 1000);
+                showToast();
+            } catch (e) { showToast('Error al copiar'); }
+        }
+
+        async function performSearch(query) {
+            if (searchTimeout) clearTimeout(searchTimeout);
+            if (!query) {
+                emptyState.classList.remove('hidden');
+                loadingState.classList.add('hidden');
+                clearBtn.classList.add('hidden');
+                searchStatus.classList.add('hidden');
+                renderCards([]);
+                return;
+            }
+            clearBtn.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            loadingState.classList.remove('hidden');
+            searchTimeout = setTimeout(async () => {
+                try {
+                    const resp = await fetch('/search/?q=' + encodeURIComponent(query));
+                    const data = await resp.json();
+                    loadingState.classList.add('hidden');
+                    renderCards(data.resultados || []);
+                    searchStatus.textContent = data.total + ' resultado' + (data.total !== 1 ? 's' : '') + ' encontrado' + (data.total !== 1 ? 's' : '');
+                    searchStatus.classList.remove('hidden');
+                } catch (err) {
+                    loadingState.classList.add('hidden');
+                    searchStatus.textContent = 'Error al buscar.';
+                    searchStatus.classList.remove('hidden');
+                }
+            }, 250);
+        }
+
+        function clearSearch() {
+            searchInput.value = '';
+            clearBtn.classList.add('hidden');
+            searchStatus.classList.add('hidden');
+            emptyState.classList.remove('hidden');
+            renderCards([]);
+            searchInput.focus();
+        }
+
+        searchInput.addEventListener('input', (e) => performSearch(e.target.value.trim()));
+        searchInput.addEventListener('keydown', (e) => { if (e.key === 'Escape') clearSearch(); });
+        document.addEventListener('DOMContentLoaded', () => {
+            performSearch('');
+            searchInput.focus();
+
+            // Form edit event listener (moved here to ensure form exists)
+            const formEdit = document.getElementById('form-edit');
+            if (formEdit) {
+                formEdit.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    if (!editingId) return;
+                    const formData = new FormData();
+                    formData.append('csrfmiddlewaretoken', getCSRF());
+                    formData.append('titulo', document.getElementById('edit-titulo').value);
+                    formData.append('categoria', document.getElementById('edit-categoria').value);
+                    formData.append('contenido', document.getElementById('edit-contenido').value);
+                    try {
+                        const resp = await fetch('/edit/' + editingId + '/', { method: 'POST', body: formData });
+                        if (resp.ok) {
+                            showToast('Mensaje actualizado');
+                            closeEditModal();
+                            loadTemplates();
+                            updateTemplateCount();
+                            if (searchInput.value.trim()) performSearch(searchInput.value.trim());
+                        } else {
+                            showToast('Error al actualizar');
+                        }
+                    } catch (e) {
+                        showToast('Error al actualizar');
+                    }
+                });
+            }
+
+            // Bulk format radio listeners
+            document.querySelectorAll('input[name="bulk-format"]').forEach(r => {
+                r.addEventListener('change', updateBulkPlaceholder);
+            });
+            updateBulkPlaceholder();
+        });
+    </script>
+
+    <!-- Edit Modal -->
+    <div id="edit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeEditModal()"></div>
+        <div class="relative bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-lg shadow-2xl">
+            <div class="flex items-center justify-between mb-5">
+                <h3 class="text-base font-semibold text-white">Editar mensaje</h3>
+                <button onclick="closeEditModal()"
+                    class="w-8 h-8 flex items-center justify-center rounded-lg text-zinc-500 hover:text-white hover:bg-zinc-800 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <form id="form-edit">
+                <input type="hidden" id="edit-id">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-400 mb-1.5">Titulo *</label>
+                        <input type="text" id="edit-titulo" required maxlength="300"
+                            class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-brand-500 transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-400 mb-1.5">Categoria</label>
+                        <input type="text" id="edit-categoria" placeholder="Ventiladores" maxlength="200"
+                            class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-brand-500 transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-400 mb-1.5">Contenido *</label>
+                        <textarea id="edit-contenido" required rows="6"
+                            class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-brand-500 transition-colors font-mono leading-relaxed"></textarea>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-3 mt-5">
+                    <button type="button" onclick="closeEditModal()"
+                        class="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm font-medium rounded-xl transition-colors">Cancelar</button>
+                    <button type="submit"
+                        class="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 text-white text-sm font-medium rounded-xl transition-colors">Guardar
+                        cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</body>
+
+</html>

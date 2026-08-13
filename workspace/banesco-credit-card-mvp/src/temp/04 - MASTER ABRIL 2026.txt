@@ -1,0 +1,8 @@
+Tarjeta          Fecha Proc Descripci�n                                   Monto                      
+5467040014854567 05/03/2026 EL MARACUCHO VE 88, C.                                         +5.521,60 
+                 06/03/2026 PAGO HOMEBANKIN                                               -16.311,60 
+                 07/03/2026 COMERCIALIZADORA VIRGE                                         +4.828,00 
+                 28/03/2026 COMER SPORT BOLTIUM SA                                         +3.972,98 
+                 28/03/2026 COMERCIALIZADORA VIRGE                                         +5.654,50 
+                 28/03/2026 EL MARACUCHO VE 88, C.                                         +3.888,89 
+                 28/03/2026 QUESOS Y CHARCUTERIA W                                           +468,51 

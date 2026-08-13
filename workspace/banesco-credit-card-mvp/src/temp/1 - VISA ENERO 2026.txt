@@ -1,0 +1,9 @@
+Tarjeta          Fecha Proc Descripci�n                                   Monto                      
+4966381609112048 22/12/2025 QUINCALLERIA FAMILIA WU C.A                                    +2.231,82 
+                 24/12/2025 NELIDA ALEXANDRA CORREA GARCIA                                 +1.320,00 
+                 28/12/2025 PAGO HOMEBANKIN                                               -25.551,82 
+                 06/01/2026 BETTZY YUDITH JIMENEZ PAR                                      +1.551,56 
+                 06/01/2026 BETTZY YUDITH JIMENEZ PAR                                      +2.615,39 
+                 09/01/2026 AUTOMERCADO MAXIMA OFERTA                                      +3.826,72 
+                 09/01/2026 AUTOMERCADO MAXIMA OFERTA                                        +793,60 
+                 10/01/2026 PAGO HOMEBANKIN                                                -8.787,27 

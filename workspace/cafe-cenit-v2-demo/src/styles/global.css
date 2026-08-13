@@ -1,0 +1,26 @@
+/* cafe-cenit-v2-demo · global.css
+   Aplica los design tokens generados por ux-ui_specialist (T01)
+   Sin HEX sueltos: todos los colores y tipografías vienen de los tokens.
+*/
+
+:root {
+  /* Colores */
+  --color-bg-cream: #F5EFE6;
+  --color-bg-paper: #FBF7F1;
+  --color-roast-900: #3B2417;
+  --color-roast-700: #5C3A24;
+  --color-roast-500: #8B5A3C;
+  --color-ember-500: #D97742;
+  --color-ember-600: #B85F30;
+
+  /* Tipografía */
+  --font-heading: 'Fraunces', ui-serif, Georgia, serif;
+  --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

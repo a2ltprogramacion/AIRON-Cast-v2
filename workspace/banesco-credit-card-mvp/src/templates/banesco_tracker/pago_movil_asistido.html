@@ -1,0 +1,711 @@
+{% extends 'base.html' %}
+{% block title %}Pago Móvil Asistido | Banesco Tracker{% endblock %}
+
+{% block content %}
+<!-- Loading Spinner Overlay -->
+<div id="ocr-loading-overlay" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex flex-col items-center justify-center space-y-4 hidden transition-all duration-300">
+    <div class="relative w-20 h-20">
+        <!-- Spinner animado -->
+        <div class="absolute inset-0 rounded-full border-4 border-slate-800"></div>
+        <div class="absolute inset-0 rounded-full border-4 border-emerald-400 border-t-transparent animate-spin"></div>
+        <svg class="w-8 h-8 text-emerald-400 absolute inset-0 m-auto animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+        </svg>
+    </div>
+    <div class="text-center space-y-1">
+        <h3 class="font-outfit font-bold text-white text-lg tracking-tight">Analizando comprobante...</h3>
+        <p class="text-xs text-slate-400 max-w-xs mx-auto">
+            Procesando OCR local en tu navegador vía WebAssembly (WASM). Costo cero, privacidad total.
+        </p>
+    </div>
+</div>
+
+<div id="page-wrapper" class="max-w-xl mx-auto space-y-8 transition-all duration-700 ease-out">
+    <!-- Encabezado de la página -->
+    <div class="text-center space-y-3">
+        <div class="inline-flex p-3 bg-gradient-to-tr from-emerald-500/10 to-teal-400/10 border border-emerald-500/20 rounded-2xl shadow-lg shadow-emerald-500/5 animate-pulse mb-2">
+            <svg class="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+            </svg>
+        </div>
+        <h1 class="font-outfit font-extrabold text-3xl tracking-tight bg-gradient-to-r from-white via-slate-100 to-emerald-400 bg-clip-text text-transparent">
+            Smart Fast Input: Pago Móvil
+        </h1>
+        <p class="text-slate-400 text-sm max-w-md mx-auto">
+            Registra tu Pago Móvil al instante. Sube la captura para auto-completar los datos o ingresa la información manualmente.
+        </p>
+    </div>
+
+    <!-- Contenedor Responsive de Columnas (Split-Screen Dinámico) -->
+    <div id="split-grid" class="grid grid-cols-1 gap-8 transition-all duration-700 ease-out">
+        
+        <!-- Columna Izquierda: Vista previa de capture e información de sugerencia -->
+        <div id="image-preview-column" class="hidden flex flex-col space-y-4 transition-all duration-500 translate-x-4 opacity-0">
+            <div class="glass rounded-2xl p-5 border border-slate-800/80 shadow-2xl flex flex-col h-full justify-between relative overflow-hidden">
+                <div class="absolute -right-16 -top-16 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div class="z-10 flex items-center justify-between border-b border-slate-900/60 pb-3 mb-4">
+                    <h3 class="font-outfit font-bold text-sm uppercase tracking-wider text-slate-350 flex items-center space-x-2">
+                        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                        <span>Auditoría de Comprobante</span>
+                    </h3>
+                    <span class="text-[10px] bg-emerald-950/60 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-full font-semibold flex items-center space-x-1">
+                        <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-ping mr-1"></span>
+                        <span>Auto-Sugerido</span>
+                    </span>
+                </div>
+                
+                <!-- Zoom Container -->
+                <div class="relative flex-grow flex items-center justify-center bg-slate-950/80 rounded-xl overflow-hidden min-h-[350px] border border-slate-900 shadow-inner group">
+                    <img id="ocr-preview-img" src="" class="max-h-[500px] max-w-full object-contain rounded-lg transition-transform duration-300 ease-out cursor-zoom-in" alt="Capture de Comprobante">
+                    <!-- Zoom Instrucción -->
+                    <div class="absolute bottom-3 right-3 bg-slate-900/80 backdrop-blur border border-slate-800 text-[10px] text-slate-400 px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                        Desplázate sobre la imagen para ampliar
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-slate-900/60 flex items-center justify-between text-xs text-slate-500">
+                    <span>Valida el capture visualmente antes de guardar</span>
+                    <button type="button" id="rotate-image-btn" class="text-slate-400 hover:text-emerald-400 transition-colors flex items-center space-x-1 py-1 px-2.5 rounded-md hover:bg-slate-900">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H17m-.002 4h.002"></path></svg>
+                        <span>Rotar</span>
+                    </button>
+                </div>
+                
+                <!-- Consola Debug OCR -->
+                <div id="ocr-debug-container" class="hidden mt-3 pt-3 border-t border-slate-900/60 text-left">
+                    <details class="group cursor-pointer">
+                        <summary class="text-[10px] text-slate-400 font-bold uppercase tracking-wider select-none flex items-center justify-between hover:text-slate-350 transition-colors">
+                            <span>Ver texto leído por OCR (Depuración)</span>
+                            <svg class="w-3 h-3 group-open:rotate-180 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                        </summary>
+                        <pre id="ocr-raw-text-log" class="mt-2 p-3 bg-slate-950/90 border border-slate-900 rounded-lg text-[10px] font-mono text-slate-400 overflow-x-auto whitespace-pre-wrap max-h-40 shadow-inner"></pre>
+                    </details>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna Derecha: Formulario Principal -->
+        <div id="form-column" class="flex flex-col">
+            <form method="post" action="{% url 'pago_movil' %}" class="glass rounded-2xl p-6 md:p-8 space-y-6 shadow-2xl border border-slate-800/80 relative overflow-hidden">
+                {% csrf_token %}
+                
+                <!-- Efecto decorativo de luz de fondo -->
+                <div class="absolute -right-16 -top-16 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -left-16 -bottom-16 w-32 h-32 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div class="space-y-5 relative z-10">
+                    <!-- Tipo de Transacción -->
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-widest">
+                            Tipo de Operación *
+                        </label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <label class="relative flex items-center justify-center p-3.5 rounded-xl border border-slate-800 bg-slate-950/50 text-slate-400 hover:text-white cursor-pointer select-none transition-all duration-300 [&:has(input:checked)]:border-emerald-500 [&:has(input:checked)]:bg-emerald-950/20 [&:has(input:checked)]:text-emerald-400 shadow-inner group">
+                                <input type="radio" name="flow_type" id="flow_egress" value="egress" checked class="sr-only">
+                                <span class="text-xs md:text-sm font-bold flex items-center space-x-2">
+                                    <svg class="w-4 h-4 text-rose-500 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+                                    <span>Consumo (Pago hecho)</span>
+                                </span>
+                            </label>
+                            <label class="relative flex items-center justify-center p-3.5 rounded-xl border border-slate-800 bg-slate-950/50 text-slate-400 hover:text-white cursor-pointer select-none transition-all duration-300 [&:has(input:checked)]:border-emerald-500 [&:has(input:checked)]:bg-emerald-950/20 [&:has(input:checked)]:text-emerald-400 shadow-inner group">
+                                <input type="radio" name="flow_type" id="flow_ingress" value="ingress" class="sr-only">
+                                <span class="text-xs md:text-sm font-bold flex items-center space-x-2">
+                                    <svg class="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+                                    <span>Ingreso (Pago recibido)</span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Cuenta Bancaria Destino/Origen -->
+                    <div class="space-y-2">
+                        <label for="bank_account_id" class="block text-xs font-bold text-slate-300 uppercase tracking-widest">
+                            Cuenta de Origen / Destino *
+                        </label>
+                        <div class="relative group">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 transition-colors group-focus-within:text-emerald-400">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                                </svg>
+                            </span>
+                            <select id="bank_account_id" name="bank_account_id" required
+                                    class="w-full bg-slate-950/80 border border-slate-800 rounded-xl pl-10 pr-4 py-3.5 text-slate-200 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all duration-300 cursor-pointer">
+                                {% for acc in bank_accounts %}
+                                    <option value="{{ acc.id }}">
+                                        {{ acc.name }} ({% if acc.account_type == 'savings' %}Ahorros{% else %}Corriente{% endif %}) - *{{ acc.last_four }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Número de Referencia -->
+                    <div class="space-y-2">
+                        <label for="reference" class="block text-xs font-bold text-slate-300 uppercase tracking-widest">
+                            Número de Referencia *
+                        </label>
+                        <div class="relative group">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold transition-colors group-focus-within:text-emerald-400">#</span>
+                            <input type="text" id="reference" name="reference" required autocomplete="off"
+                                class="w-full bg-slate-950/80 border border-slate-800 rounded-xl pl-10 pr-4 py-3.5 text-slate-200 placeholder-slate-650 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all duration-300"
+                                placeholder="Ej. 061397080182 o últimos dígitos">
+                        </div>
+                        <p class="text-[10px] text-slate-500">
+                            Puedes colocar la referencia completa de 12 dígitos o solo la parte final visible.
+                        </p>
+                    </div>
+
+                    <!-- Monto del Pago -->
+                    <div class="space-y-2">
+                        <label for="amount_ves" class="block text-xs font-bold text-slate-300 uppercase tracking-widest">
+                            Monto (Bs.) *
+                        </label>
+                        <div class="relative group">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold text-sm transition-colors group-focus-within:text-emerald-400">Bs.</span>
+                            <input type="text" id="amount_ves" name="amount_ves" required autocomplete="off"
+                                class="w-full bg-slate-950/80 border border-slate-800 rounded-xl pl-12 pr-4 py-3.5 text-slate-200 placeholder-slate-600 font-mono font-bold text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all duration-300"
+                                placeholder="0,00 o 0.00">
+                        </div>
+                    </div>
+
+                    <!-- Descripción / Beneficiario -->
+                    <div class="space-y-2">
+                        <label for="description" class="block text-xs font-bold text-slate-300 uppercase tracking-widest">
+                            Concepto / Beneficiario
+                        </label>
+                        <div class="relative group">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 transition-colors group-focus-within:text-emerald-400">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                                </svg>
+                            </span>
+                            <input type="text" id="description" name="description" autocomplete="off"
+                                class="w-full bg-slate-950/80 border border-slate-800 rounded-xl pl-10 pr-4 py-3.5 text-slate-200 placeholder-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all duration-300"
+                                placeholder="Ej. Farmatodo / Pago a Juan Perez">
+                        </div>
+                    </div>
+
+                    <!-- Backup Visual (Capture de pantalla) -->
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-widest">
+                            Captura del Comprobante (Opcional - Respaldo)
+                        </label>
+                        <div id="dropzone" class="border-2 border-dashed border-slate-850 hover:border-emerald-500/40 bg-slate-950/40 hover:bg-slate-950 rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 group min-h-[100px] relative">
+                            <input type="file" id="screenshot" name="screenshot" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                            
+                            <div id="dropzone_content" class="space-y-2 pointer-events-none transition-all duration-300">
+                                <svg class="w-6 h-6 text-slate-500 group-hover:text-emerald-400 transition-colors duration-300 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                <p class="text-xs text-slate-500 font-semibold font-outfit">
+                                    Arrastra o selecciona el capture de tu Pago Móvil
+                                </p>
+                                <p class="text-[9px] text-slate-500">
+                                    El sistema aplicará Edge OCR para rellenar los datos instantáneamente.
+                                </p>
+                            </div>
+
+                            <!-- Vista previa de archivo -->
+                            <div id="file_preview" class="hidden space-y-2 pointer-events-none transition-all duration-300 w-full">
+                                <p id="file_name" class="text-xs font-semibold text-emerald-400 truncate px-4">
+                                    capture.jpg
+                                </p>
+                                <p class="text-[9px] text-rose-400 font-semibold">
+                                    Haga doble clic para remover y restablecer vista
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="flex flex-col sm:flex-row items-center justify-between pt-6 border-t border-slate-900/60 gap-4 relative z-10">
+                    <a href="{% url 'dashboard' %}" class="w-full sm:w-auto text-center text-xs font-semibold text-slate-500 hover:text-slate-300 transition-colors duration-200 py-2">
+                        Cancelar y regresar
+                    </a>
+                    <button type="submit" class="w-full sm:w-auto bg-gradient-to-tr from-emerald-500 to-teal-400 hover:from-emerald-600 hover:to-teal-500 text-white font-bold px-8 py-3.5 rounded-xl shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/20 active:scale-95 transition-all duration-300 flex items-center justify-center space-x-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span>Procesar Pago Móvil</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- Caja informativa Premium de Auto-Conciliación -->
+    <div class="glass rounded-2xl p-5 border border-slate-800/40 space-y-3 shadow-xl">
+        <div class="flex items-center space-x-2 text-emerald-400">
+            <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+            </svg>
+            <h3 class="font-outfit font-bold text-sm uppercase tracking-wider">Conciliación Bancaria Automática</h3>
+        </div>
+        <p class="text-xs text-slate-400 leading-relaxed">
+            Cuando subes un estado de cuenta bancario en TXT, el sistema busca coincidencias no conciliadas. Si ya ingresaste este Pago Móvil manualmente, se **enlazará automáticamente** basándose en el monto y los dígitos finales de la referencia, evitando duplicar gastos y consolidando la descripción oficial.
+        </p>
+    </div>
+</div>
+
+<!-- Tesseract.js via CDN -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInput = document.getElementById('screenshot');
+        const dropzone = document.getElementById('dropzone');
+        const dropzoneContent = document.getElementById('dropzone_content');
+        const filePreview = document.getElementById('file_preview');
+        const fileName = document.getElementById('file_name');
+        
+        // Split-Screen Layout Elements
+        const pageWrapper = document.getElementById('page-wrapper');
+        const splitGrid = document.getElementById('split-grid');
+        const imagePreviewColumn = document.getElementById('image-preview-column');
+        const ocrPreviewImg = document.getElementById('ocr-preview-img');
+        const rotateImageBtn = document.getElementById('rotate-image-btn');
+        const loadingOverlay = document.getElementById('ocr-loading-overlay');
+        
+        // Input Fields to suggestions
+        const flowEgress = document.getElementById('flow_egress');
+        const flowIngress = document.getElementById('flow_ingress');
+        const referenceInput = document.getElementById('reference');
+        const amountInput = document.getElementById('amount_ves');
+        const descriptionInput = document.getElementById('description');
+
+        let rotationAngle = 0;
+
+        // Custom Toast System
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-5 right-5 z-50 flex items-center p-4 space-x-3 text-slate-200 bg-slate-900/90 border ${type === 'success' ? 'border-emerald-500/30' : 'border-rose-500/30'} rounded-xl shadow-2xl backdrop-blur-md transition-all duration-500 opacity-0 translate-y-2`;
+            
+            const icon = type === 'success' 
+                ? `<svg class="w-5 h-5 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`
+                : `<svg class="w-5 h-5 text-rose-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
+                
+            toast.innerHTML = `
+                ${icon}
+                <span class="text-xs font-semibold font-outfit">${message}</span>
+            `;
+            
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.remove('opacity-0', 'translate-y-2');
+                toast.classList.add('opacity-100', 'translate-y-0');
+            }, 50);
+            
+            setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+
+        // Collapsible Debug Console Elements
+        const ocrDebugContainer = document.getElementById('ocr-debug-container');
+        const ocrRawTextLog = document.getElementById('ocr-raw-text-log');
+
+        // Dynamic Contrast Stretching using Canvas API (Edge Preservation)
+        function preprocessImageForOcr(imageEl, callback) {
+            const img = new Image();
+            // Evitamos aserciones crossOrigin para data URLs locales que pueden colgar el onload
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Reducimos dimensiones si la imagen es excesivamente grande
+                const maxDim = 1200;
+                let width = img.naturalWidth;
+                let height = img.naturalHeight;
+                if (width > maxDim || height > maxDim) {
+                    if (width > height) {
+                        height = Math.round((height * maxDim) / width);
+                        width = maxDim;
+                    } else {
+                        width = Math.round((width * maxDim) / height);
+                        width = maxDim;
+                    }
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                
+                // Si la imagen está rotada, dibujarla con la rotación correspondiente
+                if (rotationAngle !== 0) {
+                    ctx.translate(width / 2, height / 2);
+                    ctx.rotate((rotationAngle * Math.PI) / 180);
+                    ctx.drawImage(img, -width / 2, -height / 2, width, height);
+                } else {
+                    ctx.drawImage(img, 0, 0, width, height);
+                }
+                
+                const imgData = ctx.getImageData(0, 0, width, height);
+                const data = imgData.data;
+                const len = data.length;
+                
+                // Escala de Grises + Realce de Contraste Lineal (mantiene bordes limpios sin pixelar)
+                for (let i = 0; i < len; i += 4) {
+                    const r = data[i];
+                    const g = data[i+1];
+                    const b = data[i+2];
+                    
+                    // Luminancia estándar
+                    let gray = 0.299 * r + 0.587 * g + 0.114 * b;
+                    
+                    // Aumentar contraste estirando los niveles (factor 1.6)
+                    gray = (gray - 128) * 1.6 + 128;
+                    gray = Math.max(0, Math.min(255, gray));
+                    
+                    data[i] = gray;
+                    data[i+1] = gray;
+                    data[i+2] = gray;
+                }
+                
+                ctx.putImageData(imgData, 0, 0);
+                callback(canvas.toDataURL('image/png'));
+            };
+            img.src = imageEl.src;
+        }
+
+        // JS Heuristics Parsing Engine with Venezuela Banking Error-Correction
+        function parseOcrTextToForm(text) {
+            // Unificar saltos de línea y sanitizar espaciados monetarios
+            let cleanText = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+            cleanText = cleanText.replace(/([0-9OoIi|SsB])\s*,\s*([0-9OoIi|SsB])/g, "$1,$2")
+                                 .replace(/([0-9OoIi|SsB])\s*\.\s*([0-9OoIi|SsB])/g, "$1.$2");
+            
+            const lowerText = cleanText.toLowerCase();
+            let parsedData = {
+                amount: null,
+                reference: null,
+                description: "",
+                flowType: "egress" // Egreso por defecto
+            };
+
+            // 1. Detección heurística de tipo de operación
+            const egressKeywords = /(enviado|debito|debitado|exitoso|pago realizado|pagado|egreso|comision|consumo|alquiler)/g;
+            const ingressKeywords = /(recibido|abono|depositado|acreditado|ingreso|pago recibido|transferencia recibida|cobro)/g;
+            
+            const egressScore = (lowerText.match(egressKeywords) || []).length;
+            const ingressScore = (lowerText.match(ingressKeywords) || []).length;
+            
+            if (ingressScore > egressScore) {
+                parsedData.flowType = "ingress";
+            }
+
+            // Normalizador de sustituciones comunes del motor OCR
+            function normalizeOcrNumber(str) {
+                if (!str) return "";
+                return str.replace(/[Oo]/g, "0")
+                          .replace(/[Ii|l]/g, "1")
+                          .replace(/[Ss]/g, "5")
+                          .replace(/[B]/g, "8");
+            }
+
+            // 2. Extracción de Monto (Decimal con coma o punto)
+            // Soporta Bs. X.XXX,XX o XX,XX con errores comunes de lectura
+            const amountRegex = /(?:monto|total|ves|operaci[oó]n|bs\.?|bss\.?)\s*(?:de\s+la\s+operaci[oó]n)?\s*:?[\s\n]*(?:bs\.?|bss\.?|ves)?\s*([0-9OoIi|SsB.\s]+[,.][0-9OoIi|SsB\s]{2})/i;
+            let amountMatch = cleanText.match(amountRegex);
+            
+            if (!amountMatch) {
+                // Fallback: Cualquier número compatible con decimal monetario venezolano aislado
+                const fallbackAmountRegex = /\b([0-9OoIi|SsB.\s]+[,.][0-9OoIi|SsB\s]{2})\b/;
+                amountMatch = cleanText.match(fallbackAmountRegex);
+            }
+            
+            if (amountMatch) {
+                let rawAmount = amountMatch[1].replace(/\s+/g, "");
+                let normalizedAmount = normalizeOcrNumber(rawAmount);
+                
+                // Encontrar el último separador decimal
+                let lastSeparatorIdx = Math.max(normalizedAmount.lastIndexOf(','), normalizedAmount.lastIndexOf('.'));
+                if (lastSeparatorIdx !== -1) {
+                    let integerPart = normalizedAmount.substring(0, lastSeparatorIdx).replace(/[^0-9]/g, "");
+                    let decimalPart = normalizedAmount.substring(lastSeparatorIdx + 1).replace(/[^0-9]/g, "");
+                    
+                    if (decimalPart.length > 2) decimalPart = decimalPart.substring(0, 2);
+                    if (decimalPart.length < 2) decimalPart = decimalPart.padEnd(2, '0');
+                    
+                    let val = integerPart + "." + decimalPart;
+                    if (!isNaN(parseFloat(val))) {
+                        parsedData.amount = parseFloat(val).toFixed(2);
+                    }
+                }
+            }
+
+            // 3. Extracción de Referencia (Secuencias de 6 a 12 dígitos, multilínea amigable)
+            // Se busca tras palabras clave y acepta saltos de línea intermedios [\s\n\r]*
+            const refKeywordsRegex = /(?:referencia|ref|trace|aprobac|aprobaci|recibo|nro|transacci|nro\.\s*tr|operaci|de\s*referencia)\s*:?[\s\n]*#?\s*([0-9OoIi|lB]{6,12})/i;
+            let refMatch = cleanText.match(refKeywordsRegex);
+            
+            if (refMatch) {
+                parsedData.reference = normalizeOcrNumber(refMatch[1]);
+            } else {
+                // Fallback: Primer secuencia numérica de 6-12 dígitos en el texto normalizado
+                const textWithNormalizedNumbers = normalizeOcrNumber(cleanText);
+                const allNumSeq = textWithNormalizedNumbers.match(/\b\d{6,12}\b/g) || [];
+                for (const num of allNumSeq) {
+                    if (num !== "2026" && num !== "2025" && (!parsedData.amount || !parsedData.amount.includes(num))) {
+                        parsedData.reference = num;
+                        break;
+                    }
+                }
+            }
+
+            // 4. Extracción de Concepto / Beneficiario
+            // Primero buscamos términos específicos de concepto/motivo que son más descriptivos
+            const conceptoRegex = /(?:concepto|descripci[oó]n|motivo)\s*:?[\s\n]*([^\n\r]+)/i;
+            const conceptoMatch = cleanText.match(conceptoRegex);
+            
+            if (conceptoMatch && conceptoMatch[1].trim().length > 0) {
+                parsedData.description = conceptoMatch[1].trim().substring(0, 50);
+            } else {
+                // Fallback: Si no hay concepto explícito, buscamos beneficiarios evitando colisiones
+                const beneficiarioRegex = /(?:beneficiario|para:)\s*:?[\s\n]*([^\n\r]+)/i;
+                const beneficiarioMatch = cleanText.match(beneficiarioRegex);
+                if (beneficiarioMatch && beneficiarioMatch[1].trim().length > 0) {
+                    parsedData.description = beneficiarioMatch[1].trim().substring(0, 50);
+                } else {
+                    parsedData.description = parsedData.flowType === "ingress" ? "Pago Móvil Recibido" : "Pago Móvil Banesco";
+                }
+            }
+
+            return parsedData;
+        }
+
+        // Highlight fields populated by OCR
+        function highlightInput(inputElement) {
+            inputElement.classList.add(
+                'border-emerald-500', 
+                'ring-2', 
+                'ring-emerald-400/30', 
+                'shadow-[0_0_15px_rgba(16,185,129,0.15)]', 
+                'animate-pulse-slow'
+            );
+            
+            inputElement.addEventListener('focus', function removeHighlight() {
+                inputElement.classList.remove(
+                    'border-emerald-500', 
+                    'ring-2', 
+                    'ring-emerald-400/30', 
+                    'shadow-[0_0_15px_rgba(16,185,129,0.15)]', 
+                    'animate-pulse-slow'
+                );
+                inputElement.removeEventListener('focus', removeHighlight);
+            });
+        }
+
+        // Core OCR Worker Execution
+        function performOcrAnalysis(imageSrc) {
+            loadingOverlay.classList.remove('hidden');
+            ocrDebugContainer.classList.add('hidden');
+            ocrRawTextLog.textContent = '';
+            
+            preprocessImageForOcr(ocrPreviewImg, function(preprocessedDataUrl) {
+                Tesseract.recognize(
+                    preprocessedDataUrl,
+                    'spa',
+                    { 
+                        logger: m => console.log(`OCR Progress: ${m.status} (${Math.round(m.progress * 100)}%)`) 
+                    }
+                ).then(({ data: { text } }) => {
+                    loadingOverlay.classList.add('hidden');
+                    
+                    // Exponer texto en bruto en consola y en la consola debug de UI
+                    console.log("Extracted OCR Text:\n", text);
+                    ocrRawTextLog.textContent = text || "[No se detectó ningún texto en el comprobante]";
+                    ocrDebugContainer.classList.remove('hidden');
+                    
+                    const extracted = parseOcrTextToForm(text);
+                    
+                    // Rellenar tipo de operación
+                    if (extracted.flowType === 'ingress') {
+                        flowIngress.checked = true;
+                        flowIngress.dispatchEvent(new Event('change'));
+                    } else {
+                        flowEgress.checked = true;
+                        flowEgress.dispatchEvent(new Event('change'));
+                    }
+                    
+                    let filledCount = 0;
+                    
+                    if (extracted.reference) {
+                        referenceInput.value = extracted.reference;
+                        highlightInput(referenceInput);
+                        filledCount++;
+                    }
+                    if (extracted.amount) {
+                        amountInput.value = extracted.amount;
+                        highlightInput(amountInput);
+                        filledCount++;
+                    }
+                    if (extracted.description) {
+                        descriptionInput.value = extracted.description;
+                        highlightInput(descriptionInput);
+                        filledCount++;
+                    }
+                    
+                    if (filledCount > 0) {
+                        showToast(`¡Edge OCR procesó los datos con éxito en el navegador!`, 'success');
+                    } else {
+                        showToast("OCR finalizado. No se pudieron extraer campos estructurados. Revisa la consola de depuración.", "error");
+                    }
+                }).catch(err => {
+                    console.error("OCR Error:", err);
+                    loadingOverlay.classList.add('hidden');
+                    showToast("No se pudo iniciar el motor OCR local. Rellene el formulario manualmente.", "error");
+                });
+            });
+        }
+
+        // Toggle Split-Screen Layout On Image upload
+        function applySplitScreen(imageSrc) {
+            // Transicionar contenedores a layout simétrico
+            pageWrapper.classList.remove('max-w-xl');
+            pageWrapper.classList.add('max-w-6xl', 'w-full');
+            
+            splitGrid.classList.remove('grid-cols-1');
+            splitGrid.classList.add('md:grid-cols-2');
+            
+            imagePreviewColumn.classList.remove('hidden');
+            // Retardo para animación CSS suave de opacidad y desplazamiento
+            setTimeout(() => {
+                imagePreviewColumn.classList.remove('translate-x-4', 'opacity-0');
+                imagePreviewColumn.classList.add('translate-x-0', 'opacity-100');
+            }, 50);
+
+            ocrPreviewImg.src = imageSrc;
+            rotationAngle = 0;
+            ocrPreviewImg.style.transform = `rotate(0deg) scale(1)`;
+        }
+
+        function resetSplitScreen() {
+            fileInput.value = '';
+            dropzoneContent.classList.remove('hidden');
+            filePreview.classList.add('hidden');
+            dropzone.classList.remove('border-emerald-500', 'bg-slate-950');
+            dropzone.classList.add('border-slate-850');
+            
+            // Revertir split screen a sola columna compacta
+            imagePreviewColumn.classList.add('translate-x-4', 'opacity-0');
+            setTimeout(() => {
+                imagePreviewColumn.classList.add('hidden');
+                splitGrid.classList.remove('md:grid-cols-2');
+                splitGrid.classList.add('grid-cols-1');
+                pageWrapper.classList.remove('max-w-6xl', 'w-full');
+                pageWrapper.classList.add('max-w-xl');
+            }, 400);
+
+            ocrPreviewImg.src = '';
+            
+            // Limpiar inputs sugeridos
+            referenceInput.value = '';
+            amountInput.value = '';
+            descriptionInput.value = '';
+        }
+
+        // File Selection Listener
+        fileInput.addEventListener('change', function(e) {
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                fileName.textContent = file.name;
+                dropzoneContent.classList.add('hidden');
+                filePreview.classList.remove('hidden');
+                dropzone.classList.remove('border-slate-850');
+                dropzone.classList.add('border-emerald-500', 'bg-slate-950');
+                
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    applySplitScreen(event.target.result);
+                    // Disparar OCR tras la carga y transiciones de UI
+                    setTimeout(() => {
+                        performOcrAnalysis(event.target.result);
+                    }, 500);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                resetSplitScreen();
+            }
+        });
+
+        // Interactive Zoom on mouse move (Premium micro-animation)
+        ocrPreviewImg.addEventListener('mousemove', function(e) {
+            const { left, top, width, height } = this.getBoundingClientRect();
+            const x = ((e.clientX - left) / width) * 100;
+            const y = ((e.clientY - top) / height) * 100;
+            this.style.transformOrigin = `${x}% ${y}%`;
+            this.style.transform = `rotate(${rotationAngle}deg) scale(2.2)`;
+        });
+
+        ocrPreviewImg.addEventListener('mouseleave', function() {
+            this.style.transform = `rotate(${rotationAngle}deg) scale(1)`;
+        });
+
+        // Rotar imagen en caso de capturas móviles en horizontal
+        rotateImageBtn.addEventListener('click', function() {
+            rotationAngle = (rotationAngle + 90) % 360;
+            ocrPreviewImg.style.transform = `rotate(${rotationAngle}deg) scale(1)`;
+            showToast("Imagen rotada 90° para pre-procesamiento", "success");
+            
+            // Volver a disparar OCR tras la rotación para mejorar legibilidad
+            setTimeout(() => {
+                performOcrAnalysis(ocrPreviewImg.src);
+            }, 300);
+        });
+
+        // Arrastrar y Soltar (Drag & Drop)
+        ['dragenter', 'dragover'].forEach(eventName => {
+            [dropzone, fileInput].forEach(elem => {
+                elem.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    dropzone.classList.add('border-emerald-400', 'bg-slate-900/40', 'scale-[1.01]');
+                }, false);
+            });
+        });
+
+        [dropzone, fileInput].forEach(elem => {
+            elem.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('border-emerald-400', 'bg-slate-900/40', 'scale-[1.01]');
+            }, false);
+        });
+
+        [dropzone, fileInput].forEach(elem => {
+            elem.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('border-emerald-400', 'bg-slate-900/40', 'scale-[1.01]');
+                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                    fileInput.files = e.dataTransfer.files;
+                    fileInput.dispatchEvent(new Event('change'));
+                }
+            }, false);
+        });
+
+        dropzone.addEventListener('dblclick', function(e) {
+            resetSplitScreen();
+            showToast("Vista de comprobante y campos restablecidos", "success");
+        });
+    });
+</script>
+
+<style>
+    /* Estilos Premium para Animaciones de Pulso Suave */
+    .animate-pulse-slow {
+        animation: pulseSlow 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulseSlow {
+        0%, 100% {
+            opacity: 1;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+        }
+        50% {
+            opacity: .85;
+            box-shadow: 0 0 5px rgba(16, 185, 129, 0.05);
+        }
+    }
+</style>
+{% endblock %}

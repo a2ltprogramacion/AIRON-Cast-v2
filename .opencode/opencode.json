@@ -1,0 +1,42 @@
+{
+  "$schema": "https://opencode.dev/schema.json",
+  "mcp": {
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "headers": {
+        "CONTEXT7_API_KEY": "ctx7sk-9988d916-6e57-408c-9a5a-e8e0f59f3eb7"
+      },
+      "enabled": true
+    },
+    "filesystem": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-filesystem"],
+      "args": ["Y:\\Proyectos\\AIRON-Cast\\workspace"],
+      "enabled": true
+    },
+    "notebooklm": {
+      "type": "local",
+      "command": ["python", "-m", "notebooklm_tools.mcp.server"],
+      "args": [],
+      "enabled": true,
+      "environment": {
+        "PYTHONPATH": "C:\\Users\\Argenito\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\site-packages"
+      }
+    },
+    "cloudflare": {
+      "type": "remote",
+      "url": "https://mcp.cloudflare.com/mcp",
+      "enabled": true
+    },
+    "github": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-github"],
+      "args": [],
+      "enabled": true,
+      "environment": {
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}"
+      }
+    }
+  }
+}

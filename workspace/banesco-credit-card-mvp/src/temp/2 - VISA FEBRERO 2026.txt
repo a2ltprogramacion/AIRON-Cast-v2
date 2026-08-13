@@ -1,0 +1,17 @@
+Tarjeta          Fecha Proc Descripci�n                                   Monto                      
+4966381609112048 17/01/2026 QUESOS Y CHARCUTERIA WILM                                      +2.118,79 
+                 17/01/2026 QUESOS Y CHARC WILMER VIL                                     +12.362,77 
+                 17/01/2026 DEI TREIND A V C.A                                             +3.200,00 
+                 17/01/2026 DUTU WU                                                        +2.442,81 
+                 17/01/2026 COMERCIALIZADORA SPORT BOLTIUM                                 +4.985,00 
+                 19/01/2026 BIG LIGAS 2022 CA                                                +100,00 
+                 19/01/2026 BIG LIGAS 2022 CA                                              +1.000,00 
+                 29/01/2026 PAGO HOMEBANKIN                                               -26.209,37 
+                 31/01/2026 MARYURY BARILLAS ROJAS FP                                      +7.389,18 
+                 02/02/2026 PAGO HOMEBANKIN                                                -7.389,18 
+                 06/02/2026 QUINCALLERIA FAMILIA WU C.A                                    +3.261,90 
+                 07/02/2026 QUESOS Y CHARCUTERIA WILM                                        +590,72 
+                 07/02/2026 COMERCIALIZADORA VIRGEN D                                      +1.900,00 
+                 07/02/2026 MICHAEL XAVIER SALCEDO SA                                      +4.728,00 
+                 10/02/2026 DUTU WU                                                        +2.633,41 
+                 11/02/2026 EL MARACUCHO VE 88, C.A.                                       +4.135,10 

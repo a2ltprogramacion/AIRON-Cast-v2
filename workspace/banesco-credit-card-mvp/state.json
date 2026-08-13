@@ -1,0 +1,47 @@
+{
+  "proyecto": "banesco-credit-card-mvp",
+  "fase": "produccion",
+  "estado": "ACTIVE",
+  "blueprint_listo": true,
+  "tarjetas_soporte": [
+    "Visa Dorada",
+    "Mastercard Platinum"
+  ],
+  "version": "1.1.0",
+  "current_task_id": 10,
+  "step": 1,
+  "step_description": "Reconciliacion completa MC: transacciones Mayo importadas, Pago Minimo implementado, USD funcionando.",
+  "status": "COMPLETED",
+  "last_session": "2026-06-09T16:00:00",
+  "balanced_verified": true,
+  "features": [
+    "Reconciliacion completa MC con 6 transacciones (SALDO ANTERIOR + 4 compras/pagos + INTERESES CORRIENTES)",
+    "Balance MC cuadra exactamente: 200,512.17 Bs",
+    "Calculo de Pago Mínimo implementado (% del saldo + intereses)",
+    "Display de Pago Mínimo en dashboard.html y cards.html",
+    "Campo minimum_payment_rate en CreditCard (MC: 4.21%, Visa: 4.20%)",
+    "USD calculado correctamente: balance_ves / tasa BCV",
+    "Intereses proyectados calculados para transactions tipo TDC"
+  ],
+  "key_numbers": {
+    "MC_balance": "200512.17",
+    "MC_minimum_payment": "11957.67",
+    "MC_usd": "353.21",
+    "MC_interest_ordinario": "3516.11",
+    "MC_interest_real_cargado": "6567.78",
+    "Visa_balance": "9885.50",
+    "Visa_minimum_payment": "415.19",
+    "Visa_usd": "17.41",
+    "Account_balance": "8563.69",
+    "Account_usd": "15.09",
+    "Total_TDC_deuda": "210397.67",
+    "Total_TDC_usd": "370.62",
+    "bcv_rate": "567.68",
+    "binance_rate": "761.73"
+  },
+  "tests": {
+    "total": 49,
+    "passing": 49,
+    "failing": 0
+  }
+}

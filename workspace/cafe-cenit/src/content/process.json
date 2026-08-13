@@ -1,0 +1,25 @@
+{
+  "steps": [
+    {
+      "id": "seleccion",
+      "order": 1,
+      "title": "Seleccionamos el grano",
+      "description": "Cada lote llega directo de productores venezolanos que conocemos. Trabajamos solo con café de origen único, recién cosechado, trazable hasta la finca.",
+      "icon_svg": "M12 2C8 2 5 5 5 9c0 3 2 5 4 6v3h6v-3c2-1 4-3 4-6 0-4-3-7-7-7zm-3 18h6v2H9v-2z"
+    },
+    {
+      "id": "tueste",
+      "order": 2,
+      "title": "Tostamos a pedido",
+      "description": "Tostamos en lotes pequeños, solo cuando vos pedís. No guardamos café tostado en estanterías: lo que recibís fue tostado en los últimos días, no meses.",
+      "icon_svg": "M12 3c-1.5 0-2.5 1-2.5 2.5V8c-2 1-3 3-3 5 0 3 2.5 5 5.5 5s5.5-2 5.5-5c0-2-1-4-3-5V5.5C14.5 4 13.5 3 12 3zm-2 16h4v2h-4v-2z"
+    },
+    {
+      "id": "envio",
+      "order": 3,
+      "title": "Enviamos inmediato",
+      "description": "Empacamos al vacío el mismo día del tueste y despachamos en menos de 24 horas. Recién hecho, con la frescura intacta, hasta la puerta de tu casa.",
+      "icon_svg": "M3 7l9-4 9 4v10l-9 4-9-4V7zm9 5l9-4M12 12L3 8m9 4v9"
+    }
+  ]
+}

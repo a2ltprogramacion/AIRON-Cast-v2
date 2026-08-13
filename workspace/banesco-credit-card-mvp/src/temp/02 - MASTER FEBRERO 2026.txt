@@ -1,0 +1,8 @@
+Tarjeta          Fecha Proc Descripci�n                                   Monto                      
+5467040014854567 04/01/2026 AUTOMERCADO MAXIMA OFE                                         +5.049,76 
+                 06/01/2026 DIST Y CHARCUTERIA HNO                                         +5.539,38 
+                 06/01/2026 DISTRIB Y CHARC EL MAN                                         +4.207,00 
+                 10/01/2026 PAGO HOMEBANKIN                                                -5.000,00 
+                 13/01/2026 DISTRI Y CHAR HERMANOS DAZA CA                                   +867,25 
+                 14/01/2026 AUTOMERCADO MAXIMA OFE                                         +3.132,87 
+                 29/01/2026 PAGO HOMEBANKIN                                               -25.016,96 

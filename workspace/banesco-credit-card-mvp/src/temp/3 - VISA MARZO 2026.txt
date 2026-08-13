@@ -1,0 +1,6 @@
+Tarjeta          Fecha Proc Descripci�n                                   Monto                      
+4966381609112048 14/02/2026 COMERCIALIZADORA VIRGEN D                                      +4.140,00 
+                 14/02/2026 FARMACIA LA ENTRADA RIO A                                      +1.812,74 
+                 17/02/2026 EL MARACUCHO VE 88, C.A.                                      +12.875,21 
+                 26/02/2026 PAGO HOMEBANKIN                                               -36.077,08 
+                 10/03/2026 COMER SPORT BOLTIUM SAN D                                      +3.939,57 

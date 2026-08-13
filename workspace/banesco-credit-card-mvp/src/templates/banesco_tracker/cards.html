@@ -1,0 +1,461 @@
+{% extends 'base.html' %}
+{% block title %}Cuentas y Tarjetas | Banesco Tracker{% endblock %}
+
+{% block content %}
+<div class="space-y-8 max-w-6xl mx-auto">
+    <!-- Encabezado -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h1 class="font-outfit font-extrabold text-3xl tracking-tight bg-gradient-to-r from-white via-slate-100 to-emerald-400 bg-clip-text text-transparent">
+                Gestión de Cuentas y Tarjetas
+            </h1>
+            <p class="text-slate-400 text-sm mt-1">
+                Configure sus cuentas corrientes Banesco, tarjetas de crédito y tarjetas de débito asociadas para el cálculo líquido en tiempo real.
+            </p>
+        </div>
+        <div class="flex items-center space-x-2 bg-slate-900/60 border border-slate-800/80 px-4 py-2 rounded-xl text-xs">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></span>
+            <span class="text-slate-350">Motor activo: core/airon.sqlite</span>
+        </div>
+    </div>
+
+    <!-- Layout Grid: Listado (Izquierda) + Registro (Derecha) -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Listados (Cuentas y Tarjetas - 2 columnas en LG) -->
+        <div class="lg:col-span-2 space-y-8">
+            
+            <!-- SECCIÓN 1: CUENTAS BANCARIAS -->
+            <div class="space-y-4">
+                <h2 class="font-outfit font-bold text-xl text-slate-200 flex items-center space-x-2">
+                    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                    <span>Cuentas Bancarias Activas</span>
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {% for account in bank_accounts %}
+                        <div class="flex flex-col justify-between rounded-2xl border border-slate-800/80 bg-slate-900/40 backdrop-blur-md overflow-hidden shadow-xl hover:shadow-cyan-500/5 transition-all duration-300 group">
+                            
+                            <!-- Visual Bank Account Block -->
+                            <div class="p-6 relative bg-gradient-to-br from-slate-950 via-slate-900 to-cyan-950 h-44 flex flex-col justify-between shadow-inner rounded-t-2xl">
+                                <!-- Brand & Icon -->
+                                <div class="flex justify-between items-start">
+                                    <div class="flex items-center space-x-2">
+                                        <svg class="w-5 h-5 text-cyan-400 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path>
+                                        </svg>
+                                        <span class="font-outfit font-black tracking-wider text-xs text-cyan-300">CUENTA CORRIENTE</span>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="text-[9px] uppercase tracking-wider block text-slate-400">Saldo Real</span>
+                                        <span class="font-outfit font-extrabold text-base text-emerald-400 block">Bs. {{ account.current_balance|stringformat:".2f" }}</span>
+                                        <span class="text-[10px] block font-mono mt-0.5 {% if account.projected_balance < 0 %}text-rose-450 text-rose-400 font-bold{% else %}text-slate-350 opacity-85{% endif %}">
+                                            Líquido: Bs. {{ account.projected_balance|stringformat:".2f" }}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Account Number formatted -->
+                                <div>
+                                    <span class="font-mono text-base tracking-widest block font-bold text-slate-200">
+                                        {{ account.account_number|slice:"0:4" }}  ••••  ••••  {{ account.last_four }}
+                                    </span>
+                                </div>
+                                
+                                <!-- Bottom Row -->
+                                <div class="flex justify-between items-end">
+                                    <div>
+                                        <span class="text-[9px] uppercase tracking-wider block text-slate-450">Nombre / Titular</span>
+                                        <span class="font-semibold text-xs tracking-wide block text-slate-100 truncate max-w-[160px]">{{ account.name }}</span>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="text-[9px] uppercase tracking-wider block text-slate-450">Saldo Inicial</span>
+                                        <span class="font-mono text-[10px] text-slate-350 font-bold">Bs. {{ account.initial_balance|stringformat:".2f" }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Acciones -->
+                            <div class="px-6 py-4 bg-slate-900/60 border-t border-slate-800/60 flex items-center justify-between">
+                                <span class="text-xs text-slate-500 font-mono">ID: {{ account.id }}</span>
+                                <div class="flex items-center space-x-3">
+                                    <a href="{% url 'account_edit' account.id %}" 
+                                       class="inline-flex items-center px-3 py-1.5 bg-slate-800/80 hover:bg-cyan-600 text-slate-350 hover:text-white rounded-lg border border-slate-700/60 hover:border-cyan-500 font-semibold text-xs shadow transition-all duration-300 cursor-pointer active:scale-95">
+                                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
+                                        Editar
+                                    </a>
+                                    
+                                    <form method="post" action="{% url 'account_delete' account.id %}" onsubmit="return confirm('¿Está seguro de eliminar la cuenta bancaria \'{{ account.name }}\' (*{{ account.last_four }})? Todas las tarjetas vinculadas dejarán de estarlo.');" class="inline">
+                                        {% csrf_token %}
+                                        <button type="submit" 
+                                                class="inline-flex items-center px-3 py-1.5 bg-rose-950/20 hover:bg-rose-600 text-rose-450 hover:text-white rounded-lg border border-rose-500/20 hover:border-rose-500 font-semibold text-xs shadow transition-all duration-300 cursor-pointer active:scale-95">
+                                            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                            Eliminar
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="col-span-1 md:col-span-2 p-8 text-center text-slate-500 bg-slate-900/20 rounded-2xl border border-slate-800/80">
+                            No hay cuentas bancarias registradas. Use el formulario de la derecha para añadir una cuenta manualmente.
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- SECCIÓN 2: TARJETAS ACTIVAS -->
+            <div class="space-y-4">
+                <h2 class="font-outfit font-bold text-xl text-slate-200 flex items-center space-x-2">
+                    <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                    </svg>
+                    <span>Tarjetas Activas</span>
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {% for card in cards %}
+                        <div class="flex flex-col justify-between rounded-2xl border border-slate-800/80 bg-slate-900/40 backdrop-blur-md overflow-hidden shadow-xl hover:shadow-emerald-500/5 transition-all duration-300 group">
+                            
+                            <!-- Visual Credit Card Block -->
+                            <div class="p-6 relative bg-gradient-to-br {{ card.theme_css }} h-44 flex flex-col justify-between shadow-inner rounded-t-2xl">
+                                
+                                <!-- Card Chip & Type Logo -->
+                                <div class="flex justify-between items-start">
+                                    <!-- Chip -->
+                                    <div class="w-10 h-7 rounded-md bg-gradient-to-tr from-amber-400 to-yellow-200/60 shadow-inner flex items-center justify-center opacity-85">
+                                        <div class="w-7 h-5 border border-slate-950/20 rounded"></div>
+                                    </div>
+                                    <!-- Card Brand Text/Logo -->
+                                    <div class="text-right">
+                                        <span class="font-outfit font-black tracking-wider text-sm opacity-90 block">
+                                            {{ card.card_type_display|upper }}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Card Number -->
+                                <div>
+                                    <span class="font-mono text-xl tracking-widest block font-bold opacity-90 drop-shadow">
+                                        ••••  ••••  ••••  {{ card.last_four }}
+                                    </span>
+                                </div>
+                                
+                                <!-- Card Owner / Details -->
+                                <div class="flex justify-between items-end">
+                                    <div>
+                                        <span class="text-[10px] uppercase tracking-wider block opacity-70">Nombre</span>
+                                        <span class="font-semibold text-sm tracking-wide block truncate max-w-[130px]">{{ card.name }}</span>
+                                    </div>
+                                    <div class="text-right">
+                                        {% if card.cutoff_day %}
+                                            <span class="text-[10px] uppercase tracking-wider block opacity-70">Límites / Corte / Tasa</span>
+                                            <span class="font-mono text-[9px] font-bold block">
+                                                Límite: Bs. {{ card.credit_limit|stringformat:".2f" }} | Disp: Bs. {{ card.available_limit|stringformat:".2f" }}
+                                            </span>
+                                            <span class="font-mono text-[9px] font-bold block">
+                                                Corte {{ card.cutoff_day }} / Pago {{ card.payment_day }} ({{ card.interest_rate|stringformat:".2f" }}% / Mora {{ card.mora_rate|stringformat:".2f" }}%)
+                                            </span>
+                                            {% with min_pay=card.minimum_payment_info %}
+                                            {% if min_pay.pago_minimo > 0 %}
+                                            <span class="font-mono text-[9px] font-bold block text-amber-400">
+                                                Pago Mín: Bs. {{ min_pay.pago_minimo|stringformat:".2f" }} ({{ card.minimum_payment_rate|stringformat:".2f" }}%)
+                                            </span>
+                                            {% endif %}
+                                            {% endwith %}
+                                        {% else %}
+                                            <span class="text-[10px] uppercase tracking-wider block opacity-70">Tipo</span>
+                                            <span class="font-bold text-xs block uppercase">Débito Inmediato</span>
+                                        {% endif %}
+                                        {% if card.associated_account %}
+                                            <span class="text-[9px] font-bold opacity-80 block italic">
+                                                Enlazada a: {{ card.associated_account.name }} (*{{ card.associated_account.last_four }})
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Acciones debajo de la tarjeta física -->
+                            <div class="px-6 py-4 bg-slate-900/60 border-t border-slate-800/60 flex items-center justify-between">
+                                <span class="text-xs text-slate-500 font-mono">ID: {{ card.id }}</span>
+                                <div class="flex items-center space-x-3">
+                                    <!-- Botón Editar -->
+                                    <a href="{% url 'card_edit' card.id %}" 
+                                       class="inline-flex items-center px-3 py-1.5 bg-slate-800/80 hover:bg-emerald-600 text-slate-355 hover:text-white rounded-lg border border-slate-700/60 hover:border-emerald-500 font-semibold text-xs shadow transition-all duration-300 cursor-pointer active:scale-95">
+                                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
+                                        Editar
+                                    </a>
+                                    
+                                    <!-- Botón Eliminar con Formulario de Seguridad -->
+                                    <form method="post" action="{% url 'card_delete' card.id %}" onsubmit="return confirm('¿Está seguro de eliminar la tarjeta \'{{ card.name }}\' (*{{ card.last_four }})? Se borrarán de forma PERMANENTE todas las transacciones asociadas a ella.');" class="inline">
+                                        {% csrf_token %}
+                                        <button type="submit" 
+                                                class="inline-flex items-center px-3 py-1.5 bg-rose-950/20 hover:bg-rose-600 text-rose-455 hover:text-white rounded-lg border border-rose-500/20 hover:border-rose-500 font-semibold text-xs shadow transition-all duration-300 cursor-pointer active:scale-95">
+                                            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                            Eliminar
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="col-span-1 md:col-span-2 p-8 text-center text-slate-500 bg-slate-900/20 rounded-2xl border border-slate-800/80">
+                            No hay tarjetas registradas. Use el formulario de la derecha para registrar una tarjeta manualmente.
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- Formulario de Registro con Pestañas (Derecha) -->
+        <div class="space-y-6">
+            <div class="glass rounded-2xl p-6 border border-slate-800/60 shadow-2xl space-y-6">
+                
+                <!-- Tabs para Alternar Formularios -->
+                <div class="flex border-b border-slate-800/80 pb-1">
+                    <button onclick="switchTab('tab_card')" id="btn_tab_card" class="flex-1 py-2.5 text-center font-outfit font-bold text-sm border-b-2 border-emerald-500 text-emerald-400 transition-all duration-300 focus:outline-none">
+                        Registrar Tarjeta
+                    </button>
+                    <button onclick="switchTab('tab_account')" id="btn_tab_account" class="flex-1 py-2.5 text-center font-outfit font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all duration-300 focus:outline-none">
+                        Registrar Cuenta
+                    </button>
+                </div>
+                
+                <!-- FORMULARIO 1: REGISTRAR TARJETA -->
+                <div id="form_tab_card" class="space-y-4 transition-all duration-300">
+                    <form method="post" action="{% url 'card_list' %}" class="space-y-4">
+                        {% csrf_token %}
+                        
+                        <!-- Nombre Personalizado -->
+                        <div>
+                            <label for="name" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Nombre Personalizado</label>
+                            <input type="text" id="name" name="name" required placeholder="Ej: Visa Dorada Banesco"
+                                   class="w-full bg-slate-950/80 border border-slate-850 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-xl px-4 py-2.5 text-slate-100 text-sm focus:outline-none transition-all duration-150">
+                        </div>
+                        
+                        <!-- Últimos 4 Dígitos -->
+                        <div>
+                            <label for="last_four" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Últimos 4 Dígitos</label>
+                            <input type="text" id="last_four" name="last_four" required maxlength="4" placeholder="Ej: 1234"
+                                   class="w-full bg-slate-950/80 border border-slate-850 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-xl px-4 py-2.5 text-slate-100 text-sm font-mono focus:outline-none transition-all duration-150">
+                        </div>
+                        
+                        <!-- Título de Tarjeta Visible -->
+                        <div>
+                            <label for="card_type_display" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Título Visible (En la Tarjeta)</label>
+                            <input type="text" id="card_type_display" name="card_type_display" required value="VISA DORADA" placeholder="Ej: VISA SIGNATURE o MASTERCARD PLATINUM"
+                                   class="w-full bg-slate-950/80 border border-slate-850 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-xl px-4 py-2.5 text-slate-100 text-sm focus:outline-none transition-all duration-150">
+                        </div>
+
+                        <!-- Cuenta Bancaria Asociada -->
+                        <div>
+                            <label for="associated_account" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Cuenta Bancaria Asociada</label>
+                            <select id="associated_account" name="associated_account"
+                                    class="w-full bg-slate-950/80 border border-slate-850 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-xl px-4 py-2.5 text-slate-100 text-sm focus:outline-none transition-all duration-150">
+                                <option value="">(Ninguna)</option>
+                                {% for account in bank_accounts %}
+                                    <option value="{{ account.id }}">{{ account.name }} (*{{ account.last_four }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Color / Diseño Visual -->
+                        <div>
+                            <label for="theme_color" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Diseño Visual (Gradiente)</label>
+                            <select id="theme_color" name="theme_color"
+                                    class="w-full bg-slate-950/80 border border-slate-850 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-xl px-4 py-2.5 text-slate-100 text-sm focus:outline-none transition-all duration-150">
+                                <option value="gold">Dorado Metálico</option>
+                                <option value="platinum">Gris Platino Oscuro</option>
+                                <option value="silver">Plata Metálica</option>
+                                <option value="black">Carbono Profundo</option>
+                                <option value="green">Verde Esmeralda</option>
+                                <option value="blue">Azul Zafiro</option>
+                                <option value="purple">Violeta Real</option>
+                                <option value="red">Rubí Intenso</option>
+                                <option value="white">Hielo Blanco</option>
+                            </select>
+                        </div>
+
+                        <!-- Tipo de Tarjeta -->
+                        <div>
+                            <label for="card_type" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Tipo de Tarjeta</label>
+                            <select id="card_type" onchange="toggleCycleFields(this.value)"
+                                    class="w-full bg-slate-950/80 border border-slate-850 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-xl px-4 py-2.5 text-slate-100 text-sm focus:outline-none transition-all duration-150">
+                                <option value="TDC">Tarjeta de Crédito (Con Ciclos)</option>
+                                <option value="DEBIT">Tarjeta de Débito (Sin Ciclos)</option>
+                            </select>
+                        </div>
+
+                        <!-- Campos de Ciclo -->
+                        <div id="cycle_fields" class="space-y-4 transition-all duration-300">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label for="cutoff_day" class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Día de Corte</label>
+                                    <input type="number" id="cutoff_day" name="cutoff_day" min="1" max="31" placeholder="Ej: 12"
+                                           class="w-full bg-slate-950/80 border border-slate-850 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-xl px-4 py-2.5 text-slate-100 text-sm font-mono focus:outline-none transition-all duration-150">
+                                </div>
+                                <div>
+                                    <label for="payment_day" class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Día de Pago</label>
+                                    <input type="number" id="payment_day" name="payment_day" min="1" max="31" placeholder="Ej: 8"
+                                           class="w-full bg-slate-950/80 border border-slate-850 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-xl px-4 py-2.5 text-slate-100 text-sm font-mono focus:outline-none transition-all duration-150">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Campos Financieros Adicionales -->
+                        <div id="financial_fields" class="space-y-4 transition-all duration-300">
+                            <div>
+                                <label for="credit_limit" class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Límite Total (Bs.)</label>
+                                <input type="number" id="credit_limit" name="credit_limit" min="0" step="0.01" value="0.00" required
+                                       class="w-full bg-slate-950/80 border border-slate-850 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-xl px-4 py-2.5 text-slate-100 text-sm font-mono focus:outline-none transition-all duration-150">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label for="interest_rate" class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Tasa Nominal Anual (%)</label>
+                                    <input type="number" id="interest_rate" name="interest_rate" min="0" max="100" step="0.01" value="60.00" required
+                                           class="w-full bg-slate-950/80 border border-slate-850 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-xl px-4 py-2.5 text-slate-100 text-sm font-mono focus:outline-none transition-all duration-150">
+                                </div>
+                                <div>
+                                    <label for="mora_rate" class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Tasa de Mora (%)</label>
+                                    <input type="number" id="mora_rate" name="mora_rate" min="0" max="100" step="0.01" value="3.00" required
+                                           class="w-full bg-slate-950/80 border border-slate-850 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-xl px-4 py-2.5 text-slate-100 text-sm font-mono focus:outline-none transition-all duration-150">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" 
+                                class="w-full inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-600 hover:to-teal-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/35 transition-all duration-300 cursor-pointer active:scale-[0.98]">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Registrar Tarjeta
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- FORMULARIO 2: REGISTRAR CUENTA BANCARIA -->
+                <div id="form_tab_account" class="space-y-4 hidden transition-all duration-300">
+                    <form method="post" action="{% url 'account_create' %}" class="space-y-4">
+                        {% csrf_token %}
+                        
+                        <!-- Nombre Personalizado de la Cuenta -->
+                        <div>
+                            <label for="acc_name" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Nombre Personalizado de la Cuenta</label>
+                            <input type="text" id="acc_name" name="name" required placeholder="Ej: Cuenta Corriente Banesco" value="Cuenta Corriente Banesco"
+                                   class="w-full bg-slate-950/80 border border-slate-850 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-2.5 text-slate-100 text-sm focus:outline-none transition-all duration-150">
+                        </div>
+                        
+                        <!-- Número de Cuenta Completo (20 dígitos) -->
+                        <div>
+                            <label for="account_number" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Número de Cuenta Banesco (20 dígitos)</label>
+                            <input type="text" id="account_number" name="account_number" required maxlength="20" placeholder="Ej: 01340000000000000000"
+                                   class="w-full bg-slate-950/80 border border-slate-850 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-2.5 text-slate-100 text-sm font-mono focus:outline-none transition-all duration-150">
+                            <p class="text-[10px] text-slate-500 mt-1">Los 4 dígitos finales se extraerán automáticamente.</p>
+                        </div>
+                        
+                        <!-- Saldo Inicial -->
+                        <div>
+                            <label for="initial_balance" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Saldo Inicial en Cuenta (Bs.)</label>
+                            <input type="text" id="initial_balance" name="initial_balance" required placeholder="Ej: 1500,00" value="0.00"
+                                   class="w-full bg-slate-950/80 border border-slate-850 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 rounded-xl px-4 py-2.5 text-slate-100 text-sm font-mono focus:outline-none transition-all duration-150">
+                        </div>
+                        
+                        <button type="submit" 
+                                class="w-full inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-650 text-white font-bold text-sm rounded-xl shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/35 transition-all duration-300 cursor-pointer active:scale-[0.98]">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Registrar Cuenta Bancaria
+                        </button>
+                    </form>
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+<script>
+    function switchTab(tabId) {
+        const tabCard = document.getElementById('form_tab_card');
+        const tabAccount = document.getElementById('form_tab_account');
+        const btnCard = document.getElementById('btn_tab_card');
+        const btnAccount = document.getElementById('btn_tab_account');
+        
+        if (tabId === 'tab_card') {
+            tabCard.classList.remove('hidden');
+            tabAccount.classList.add('hidden');
+            btnCard.classList.add('border-emerald-500', 'text-emerald-400');
+            btnCard.classList.remove('border-transparent', 'text-slate-400');
+            btnAccount.classList.remove('border-emerald-500', 'text-emerald-400');
+            btnAccount.classList.add('border-transparent', 'text-slate-400');
+        } else {
+            tabCard.classList.add('hidden');
+            tabAccount.classList.remove('hidden');
+            btnCard.classList.remove('border-emerald-500', 'text-emerald-400');
+            btnCard.classList.add('border-transparent', 'text-slate-400');
+            btnAccount.classList.add('border-emerald-500', 'text-emerald-400');
+            btnAccount.classList.remove('border-transparent', 'text-slate-400');
+        }
+    }
+
+    function toggleCycleFields(type) {
+        const fields = document.getElementById('cycle_fields');
+        const cutoffInput = document.getElementById('cutoff_day');
+        const paymentInput = document.getElementById('payment_day');
+        
+        const financialFields = document.getElementById('financial_fields');
+        const creditLimitInput = document.getElementById('credit_limit');
+        const interestRateInput = document.getElementById('interest_rate');
+        const moraRateInput = document.getElementById('mora_rate');
+        
+        if (type === 'DEBIT') {
+            fields.style.opacity = '0.3';
+            fields.style.pointerEvents = 'none';
+            cutoffInput.value = '';
+            paymentInput.value = '';
+            cutoffInput.removeAttribute('required');
+            paymentInput.removeAttribute('required');
+            
+            financialFields.style.opacity = '0.3';
+            financialFields.style.pointerEvents = 'none';
+            creditLimitInput.value = '0.00';
+            interestRateInput.value = '0.00';
+            moraRateInput.value = '0.00';
+            creditLimitInput.removeAttribute('required');
+            interestRateInput.removeAttribute('required');
+            moraRateInput.removeAttribute('required');
+        } else {
+            fields.style.opacity = '1';
+            fields.style.pointerEvents = 'auto';
+            cutoffInput.setAttribute('required', 'required');
+            paymentInput.setAttribute('required', 'required');
+            
+            financialFields.style.opacity = '1';
+            financialFields.style.pointerEvents = 'auto';
+            if (creditLimitInput.value === '0.00') creditLimitInput.value = '0.00';
+            if (interestRateInput.value === '0.00' || !interestRateInput.value) interestRateInput.value = '60.00';
+            if (moraRateInput.value === '0.00' || !moraRateInput.value) moraRateInput.value = '3.00';
+            creditLimitInput.setAttribute('required', 'required');
+            interestRateInput.setAttribute('required', 'required');
+            moraRateInput.setAttribute('required', 'required');
+        }
+    }
+    
+    // Inicializar requeridos y estados basados en el valor inicial del selector
+    toggleCycleFields(document.getElementById('card_type').value);
+</script>
+{% endblock %}

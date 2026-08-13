@@ -1,0 +1,21 @@
+{
+  "name": "Café Cenit",
+  "tagline": "Tostado a pedido. De origen venezolano. Recién hecho para vos.",
+  "description": "Café Cenit tuesta café de origen único venezolano solo cuando vos lo pedís. Tres perfiles: Suave, Intenso, Descafeinado. Envío inmediato a toda Venezuela.",
+  "whatsapp": "+584140000000",
+  "whatsapp_display": "+58 414 000 0000",
+  "email": "hola@cafecenit.com.ve",
+  "instagram": "https://instagram.com/cafecenit",
+  "city": "Venezuela",
+  "country": "VE",
+  "locale": "es_VE",
+  "domain_placeholder": "https://cafecenit.netlify.app",
+  "currency": {
+    "primary": "USD",
+    "secondary": "VES",
+    "bcv_api_url": "https://ve.dolarapi.com/v1/dolares/oficial",
+    "bcv_api_fallback": "https://api.exchangerate-api.com/v4/latest/USD",
+    "fallback_rate_ves_per_usd": 36.5,
+    "fallback_note": "Si la API del BCV no responde, usamos esta tasa manual como último recurso."
+  }
+}

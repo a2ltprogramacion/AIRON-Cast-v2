@@ -1,0 +1,74 @@
+---
+import processData from '../content/process.json';
+---
+
+<section
+  id="proceso"
+  class="section-y"
+  style="background-color: var(--color-bg-paper);"
+>
+  <div class="container-cenit">
+    <div class="text-center mb-12 md:mb-16 reveal">
+      <span
+        class="inline-block text-xs font-semibold uppercase tracking-widest mb-3"
+        style="color: var(--color-ember-600);"
+      >
+        Cómo trabajamos
+      </span>
+      <h2
+        class="text-3xl md:text-4xl lg:text-5xl font-heading font-bold max-w-3xl mx-auto"
+        style="color: var(--color-roast-900);"
+      >
+        De la finca a tu taza, sin pasos innecesarios
+      </h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6 md:gap-8">
+      {processData.steps.map((step) => (
+        <article
+          class="reveal p-8 md:p-10 rounded-2xl border transition-all hover:-translate-y-1 hover:shadow-lg"
+          style="background-color: var(--color-bg-cream); border-color: var(--color-roast-100);"
+        >
+          <div
+            class="w-14 h-14 rounded-2xl flex items-center justify-center mb-6"
+            style="background-color: var(--color-ember-100);"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              style="color: var(--color-ember-600);"
+              aria-hidden="true"
+            >
+              <path d={step.icon_svg} />
+            </svg>
+          </div>
+          <div
+            class="text-xs font-bold uppercase tracking-widest mb-2"
+            style="color: var(--color-ember-600);"
+          >
+            Paso {String(step.order).padStart(2, '0')}
+          </div>
+          <h3
+            class="text-xl md:text-2xl font-heading font-bold mb-3"
+            style="color: var(--color-roast-900);"
+          >
+            {step.title}
+          </h3>
+          <p
+            class="text-base leading-relaxed"
+            style="color: var(--color-roast-700);"
+          >
+            {step.description}
+          </p>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>

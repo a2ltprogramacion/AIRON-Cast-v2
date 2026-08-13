@@ -1,0 +1,16 @@
+---
+// CurrencySwitcher (versión componente para uso aislado si se requiere).
+// La versión interactiva está en Navbar.astro; este componente solo
+// muestra el badge de tasa BCV.
+---
+
+<div
+  class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium"
+  style="background-color: var(--color-cream-soft); color: var(--color-roast-700); border: 1px solid var(--color-roast-100);"
+>
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="10"/>
+    <path d="M12 6v6l4 2"/>
+  </svg>
+  <span data-rate-badge>Cargando tasa BCV…</span>
+</div>

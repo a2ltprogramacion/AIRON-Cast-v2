@@ -1,0 +1,21 @@
+/* TEAM */
+Developer & Architect: A2LT Soluciones
+Website: https://a2lt.netlify.app
+Contact: contacto@a2lt.com
+Location: Venezuela / Remote
+
+Client: Café Cenit
+Project: Landing page institucional
+Tone: Cálido, artesanal, profesional
+
+/* TECHNOLOGY */
+Framework: Astro 5 (SSG)
+Styling: Tailwind CSS v4 (Oxide Engine, CSS-First @theme)
+Language: TypeScript
+Hosting: Netlify (CI/CD + Identity)
+Standards: HTML5, CSS3, WAI-ARIA 2.1
+
+/* SITE */
+Last update: 2026/06/06
+Standards: HTML5, CSS3, WAI-ARIA
+Canonical: https://cafecenit.netlify.app

@@ -1,0 +1,4 @@
+Tarjeta          Fecha Proc Descripci�n                                   Monto                      
+5467040014854567 10/04/2026 PAGO HOMEBANKIN                                               -18.812,88 
+                 16/04/2026 FERROCERAMICAS VALCRO                                          +4.620,00 
+                 16/04/2026 FERROCERAMICAS VALCRO                                         +78.793,43 

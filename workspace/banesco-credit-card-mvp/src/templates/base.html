@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Banesco Credit Card Tracker{% endblock %}</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        outfit: ['Outfit', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <!-- Custom Scrollbar and Smooth Transitions -->
+    <style>
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a; /* slate-900 */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155; /* slate-700 */
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569; /* slate-600 */
+        }
+        .glass {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .neon-border-green:hover {
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+            border-color: rgba(16, 185, 129, 0.4);
+        }
+        .neon-border-yellow:hover {
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
+            border-color: rgba(245, 158, 11, 0.4);
+        }
+        .neon-border-red:hover {
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.4);
+        }
+        [x-cloak] { display: none !important; }
+    </style>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-emerald-500 selection:text-white">
+
+    <!-- Header / Navbar -->
+    <header class="sticky top-0 z-50 glass shadow-lg" x-data="{ mobileOpen: false }">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <span class="font-outfit font-extrabold text-xl tracking-tight bg-gradient-to-r from-white via-slate-100 to-emerald-400 bg-clip-text text-transparent">
+                        Banesco Tracker
+                    </span>
+                </div>
+                
+                <!-- Desktop Navigation Menu -->
+                <nav class="hidden md:flex items-center space-x-1">
+                    <a href="{% url 'dashboard' %}" class="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 {% if request.resolver_match.url_name == 'dashboard' %}bg-slate-800 text-emerald-400 shadow-inner border border-slate-700/50{% else %}text-slate-400 hover:text-white hover:bg-slate-900/50{% endif %}">
+                        Resumen
+                    </a>
+                    <a href="{% url 'pago_movil' %}" class="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 {% if request.resolver_match.url_name == 'pago_movil' %}bg-slate-800 text-emerald-400 shadow-inner border border-slate-700/50{% else %}text-slate-400 hover:text-white hover:bg-slate-900/50{% endif %}">
+                        Pago Móvil
+                    </a>
+                    <a href="{% url 'manual_entry' %}" class="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 {% if request.resolver_match.url_name == 'manual_entry' %}bg-slate-800 text-emerald-400 shadow-inner border border-slate-700/50{% else %}text-slate-400 hover:text-white hover:bg-slate-900/50{% endif %}">
+                        Registrar
+                    </a>
+                    <a href="{% url 'paste_box' %}" class="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 {% if request.resolver_match.url_name == 'paste_box' %}bg-slate-800 text-emerald-400 shadow-inner border border-slate-700/50{% else %}text-slate-400 hover:text-white hover:bg-slate-900/50{% endif %}">
+                        Importar
+                    </a>
+
+                    <a href="{% url 'card_list' %}" class="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 {% if request.resolver_match.url_name == 'card_list' or request.resolver_match.url_name == 'card_edit' or request.resolver_match.url_name == 'account_edit' %}bg-slate-800 text-emerald-400 shadow-inner border border-slate-700/50{% else %}text-slate-400 hover:text-white hover:bg-slate-900/50{% endif %}">
+                        Cuentas y Tarjetas
+                    </a>
+                    <a href="{% url 'rates' %}" class="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 {% if request.resolver_match.url_name == 'rates' %}bg-slate-800 text-emerald-400 shadow-inner border border-slate-700/50{% else %}text-slate-400 hover:text-white hover:bg-slate-900/50{% endif %}">
+                        Ajuste de Tasas
+                    </a>
+                </nav>
+
+                <!-- Mobile Hamburger Button -->
+                <button @click="mobileOpen = !mobileOpen" class="md:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-900/50 transition-colors">
+                    <svg x-show="!mobileOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                    <svg x-show="mobileOpen" x-cloak class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Menu -->
+        <div x-show="mobileOpen" x-cloak x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-2" class="md:hidden glass border-t border-slate-800/50">
+            <nav class="max-w-7xl mx-auto px-4 py-3 space-y-1">
+                <a href="{% url 'dashboard' %}" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 {% if request.resolver_match.url_name == 'dashboard' %}bg-slate-800 text-emerald-400 border border-slate-700/50{% else %}text-slate-400 hover:text-white hover:bg-slate-900/50{% endif %}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                    <span>Resumen</span>
+                </a>
+                <a href="{% url 'pago_movil' %}" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 {% if request.resolver_match.url_name == 'pago_movil' %}bg-slate-800 text-emerald-400 border border-slate-700/50{% else %}text-slate-400 hover:text-white hover:bg-slate-900/50{% endif %}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                    <span>Pago Movil</span>
+                </a>
+                <a href="{% url 'manual_entry' %}" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 {% if request.resolver_match.url_name == 'manual_entry' %}bg-slate-800 text-emerald-400 border border-slate-700/50{% else %}text-slate-400 hover:text-white hover:bg-slate-900/50{% endif %}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    <span>Registrar</span>
+                </a>
+                <a href="{% url 'paste_box' %}" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 {% if request.resolver_match.url_name == 'paste_box' %}bg-slate-800 text-emerald-400 border border-slate-700/50{% else %}text-slate-400 hover:text-white hover:bg-slate-900/50{% endif %}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <span>Importar</span>
+                </a>
+                <a href="{% url 'card_list' %}" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 {% if request.resolver_match.url_name == 'card_list' or request.resolver_match.url_name == 'card_edit' or request.resolver_match.url_name == 'account_edit' %}bg-slate-800 text-emerald-400 border border-slate-700/50{% else %}text-slate-400 hover:text-white hover:bg-slate-900/50{% endif %}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                    <span>Cuentas y Tarjetas</span>
+                </a>
+                <a href="{% url 'rates' %}" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 {% if request.resolver_match.url_name == 'rates' %}bg-slate-800 text-emerald-400 border border-slate-700/50{% else %}text-slate-400 hover:text-white hover:bg-slate-900/50{% endif %}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span>Ajuste de Tasas</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Django Messages System -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full mt-6">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="p-4 mb-4 rounded-xl border flex items-center justify-between shadow-2xl transition-all duration-500 animate-pulse {% if message.tags == 'success' %}bg-emerald-950/40 border-emerald-500/30 text-emerald-300{% elif message.tags == 'error' %}bg-rose-950/40 border-rose-500/30 text-rose-300{% elif message.tags == 'warning' %}bg-amber-950/40 border-amber-500/30 text-amber-300{% else %}bg-slate-900/40 border-slate-700/30 text-slate-300{% endif %}" role="alert">
+                    <div class="flex items-center space-x-3">
+                        {% if message.tags == 'success' %}
+                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        {% elif message.tags == 'error' or message.tags == 'warning' %}
+                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                        {% else %}
+                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        {% endif %}
+                        <p class="text-sm font-medium">{{ message }}</p>
+                    </div>
+                    <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white transition-colors duration-250">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Auto-dismiss Messages -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const messages = document.querySelectorAll('[role="alert"]');
+            messages.forEach(function(msg) {
+                setTimeout(function() {
+                    msg.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
+                    msg.style.opacity = '0';
+                    msg.style.transform = 'translateY(-10px)';
+                    setTimeout(function() { msg.remove(); }, 500);
+                }, 5000);
+            });
+        });
+    </script>
+
+    <!-- Footer -->
+    <footer class="glass border-t border-slate-800/80 py-6 mt-12 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p>&copy; 2026 Banesco Credit Card Tracker — Desarrollado para Argenito.</p>
+            <p class="flex items-center space-x-1">
+                <span>Reforzado por</span>
+                <span class="font-outfit font-bold text-emerald-400">AIRON-Cast</span>
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+            </p>
+        </div>
+    </footer>
+</body>
+</html>

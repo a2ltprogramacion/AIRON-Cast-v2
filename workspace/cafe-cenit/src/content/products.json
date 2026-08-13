@@ -1,0 +1,43 @@
+{
+  "products": [
+    {
+      "id": "suave",
+      "name": "Suave",
+      "tagline": "Equilibrado y dulce, para empezar el día sin prisa.",
+      "description": "Un café que abraza. Notas a chocolate con leche, caramelo y un toque de almendra. Tueste medio que respeta el origen y deja una taza aterciopelada.",
+      "notes": ["Chocolate con leche", "Caramelo", "Almendra", "Final sedoso"],
+      "origin": "Andes venezolanos",
+      "roast_level": "Tueste medio",
+      "weight": "250g",
+      "priceUSD": 8,
+      "best_for": "Filtro V60, Chemex, espresso suave",
+      "icon": "☕"
+    },
+    {
+      "id": "intenso",
+      "name": "Intenso",
+      "tagline": "Carácter firme, cuerpo denso, pensado para los que piden 'sin azúcar'.",
+      "description": "Para los que saben lo que quieren. Tueste medio-oscuro que despierta notas a cacao puro, panela tostada y un final largo y especiado.",
+      "notes": ["Cacao puro", "Panela tostada", "Especias", "Final largo"],
+      "origin": "Andes venezolanos",
+      "roast_level": "Tueste medio-oscuro",
+      "weight": "250g",
+      "priceUSD": 10,
+      "best_for": "Espresso, moka, prensa francesa",
+      "icon": "🔥"
+    },
+    {
+      "id": "descafeinado",
+      "name": "Descafeinado",
+      "tagline": "Todo el sabor, ninguna de las desveladas.",
+      "description": "Café descafeinado naturalmente que conserva cuerpo y notas. Cacao, nuez y un dulzor residual que recuerda a galleta. Perfecto para la noche o para los que evitan la cafeína.",
+      "notes": ["Cacao", "Nuez", "Galleta", "Dulzor residual"],
+      "origin": "Andes venezolanos",
+      "roast_level": "Tueste medio",
+      "weight": "250g",
+      "priceUSD": 11,
+      "best_for": "Cualquier método, sin culpa nocturna",
+      "icon": "🌙"
+    }
+  ]
+}

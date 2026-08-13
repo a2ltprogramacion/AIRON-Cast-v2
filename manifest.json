@@ -1,0 +1,479 @@
+{
+    "_meta": {
+        "framework": "AIRON-Cast",
+        "version": "1.1.0",
+        "description": "Contratos de capacidades y restricciones por agente. Ningún agente opera fuera de su jurisdicción definida aquí.",
+        "schema_version": "2"
+    },
+    "agents": {
+        "orchestrator": {
+            "description": "Control táctico del flujo. Mueve tareas entre estados, asigna agentes y monitorea el avance. No ejecuta trabajo de desarrollo directo.",
+            "circle": 2,
+            "can_read": [
+                "central_intelligence.db",
+                "workspace/<slug>/state.json",
+                ".agents/profiles/",
+                ".agents/workflows/",
+                "rules/",
+                "AGENTS.md",
+                ".agents/skills/context7-resolver/",
+                ".agents/skills/notebooklm-mcp-integration/"
+            ],
+            "can_write": [
+                "central_intelligence.db:tasks",
+                "central_intelligence.db:checkpoints",
+                "central_intelligence.db:execution_logs",
+                "workspace/<slug>/state.json",
+                "workspace/<slug>/MISSION_CONTROL.md"
+            ],
+            "can_call_mcps": [
+                "context7",
+                "notebooklm"
+            ],
+            "can_escalate_to": [
+                "requirements_architect",
+                "hitl"
+            ],
+            "forbidden": [
+                "Escribir código fuente en workspace/<slug>/src/",
+                "Crear o eliminar proyectos por cuenta propia",
+                "Modificar el schema de central_intelligence.db",
+                "Cambiar prioridad de tareas sin aprobación del operador"
+            ],
+            "output_schema": {
+                "task_transition": {
+                    "task_id": "integer",
+                    "from_status": "string",
+                    "to_status": "string",
+                    "reason": "string",
+                    "next_agent": "string"
+                }
+            }
+        },
+        "pm": {
+            "description": "Transformar objetivos de usuario en artefactos de desarrollo estructurados: user stories, tickets, criterios de aceptación y backlogs priorizados.",
+            "circle": 2,
+            "can_read": [
+                "central_intelligence.db",
+                "workspace/<slug>/state.json",
+                ".agents/profiles/",
+                "rules/",
+                "AGENTS.md"
+            ],
+            "can_write": [
+                "workspace/<slug>/BACKLOG.md",
+                "central_intelligence.db:execution_logs",
+                "central_intelligence.db:checkpoints"
+            ],
+            "can_call_mcps": [],
+            "can_escalate_to": [
+                "orchestrator",
+                "hitl"
+            ],
+            "forbidden": [
+                "Escribir código fuente",
+                "Diseñar UI o tomar decisiones de arquitectura técnica",
+                "Generar backlog desde stories o tickets incompletos",
+                "Asignar prioridades sin confirmación del Operador"
+            ],
+            "output_schema": {
+                "backlog": {
+                    "stories_count": "integer",
+                    "tickets_count": "integer",
+                    "acceptance_criteria_per_ticket": "integer"
+                }
+            }
+        },
+        "requirements_architect": {
+            "description": "Análisis inicial del proyecto. Genera el blueprint, define tareas y las registra en la DB.",
+            "circle": 2,
+            "can_read": [
+                "central_intelligence.db",
+                "workspace/<slug>/state.json",
+                ".agents/profiles/",
+                "rules/",
+                "AGENTS.md",
+                ".agents/skills/context7-resolver/",
+                ".agents/skills/astro-landing-kit/"
+            ],
+            "can_write": [
+                "central_intelligence.db:tasks",
+                "central_intelligence.db:adrs",
+                "central_intelligence.db:checkpoints",
+                "central_intelligence.db:execution_logs",
+                "workspace/<slug>/state.json",
+                "workspace/<slug>/REQUIREMENTS.md",
+                "workspace/<slug>/BACKLOG.md"
+            ],
+            "can_call_mcps": [
+                "context7",
+                "notebooklm"
+            ],
+            "can_escalate_to": [
+                "orchestrator",
+                "hitl"
+            ],
+            "forbidden": [
+                "Escribir código fuente en workspace/<slug>/src/",
+                "Modificar archivos de configuración de herramientas (tools/)",
+                "Tomar decisiones finales sobre diseño visual",
+                "Modificar el estado del proyecto sin checkpoint previo"
+            ],
+            "output_schema": {
+                "blueprint": {
+                    "project_slug": "string",
+                    "workflow": "string",
+                    "tasks": [
+                        {
+                            "title": "string",
+                            "assigned_agent": "string",
+                            "priority": "integer 1-10",
+                            "dependencies": "array of task titles"
+                        }
+                    ]
+                }
+            }
+        },
+        "ux-ui_specialist": {
+            "description": "Revisión de experiencia de usuario: flujos, usabilidad, consistencia visual y accesibilidad. Define design tokens y especificaciones de componentes.",
+            "circle": 3,
+            "can_read": [
+                "workspace/<slug>/REQUIREMENTS.md",
+                "workspace/<slug>/state.json",
+                ".agents/skills/a2lt-brand-kit/",
+                ".agents/skills/ui-ux-pro-max/",
+                ".agents/skills/tailwind-architecture/",
+                ".agents/skills/context7-resolver/",
+                ".agents/skills/stitch-designer/"
+            ],
+            "can_write": [
+                "workspace/<slug>/src/styles/design-tokens.json",
+                "workspace/<slug>/src/styles/component-specs.md",
+                "workspace/<slug>/adrs/visual-decisions.md",
+                "central_intelligence.db:adrs",
+                "central_intelligence.db:execution_logs",
+                "central_intelligence.db:checkpoints"
+            ],
+            "can_call_mcps": [
+                "context7",
+                "StitchMCP"
+            ],
+            "can_escalate_to": [
+                "orchestrator"
+            ],
+            "forbidden": [
+                "Escribir código HTML/CSS/JS final",
+                "Modificar REQUIREMENTS.md o BACKLOG.md",
+                "Ignorar paletas base proporcionadas por el operador",
+                "Hardcodear colores hexadecimales",
+                "Implementar frameworks de terceros sin aprobación previa",
+                "Inventar patrones de diseño no presentes en design_defaults.md"
+            ],
+            "output_schema": {
+                "design_tokens": {
+                    "colors": "object",
+                    "typography": "object",
+                    "spacing": "object",
+                    "breakpoints": "object"
+                }
+            }
+        },
+        "writer": {
+            "description": "Generar copy orientado a conversión, metadatos SEO y secuencias de email para proyectos web. Output en español por defecto.",
+            "circle": 2,
+            "can_read": [
+                "workspace/<slug>/REQUIREMENTS.md",
+                "workspace/<slug>/state.json",
+                ".agents/skills/seo-content-strategy/",
+                ".agents/skills/seo-onpage-architecture/",
+                ".agents/skills/seo-technical-audit/",
+                ".agents/skills/geo-optimization/"
+            ],
+            "can_write": [
+                "workspace/<slug>/src/content/",
+                "central_intelligence.db:execution_logs",
+                "central_intelligence.db:checkpoints"
+            ],
+            "can_call_mcps": [],
+            "can_escalate_to": [
+                "orchestrator",
+                "hitl"
+            ],
+            "forbidden": [
+                "Generar documentación técnica",
+                "Inventar testimonios o estadísticas",
+                "Usar ALL CAPS en subjects de email",
+                "Exceder 5 emails por secuencia"
+            ],
+            "output_schema": {
+                "copy_output": {
+                    "sections_generated": "integer",
+                    "meta_tags_generated": "integer",
+                    "language": "string"
+                }
+            }
+        },
+        "frontend_worker": {
+            "description": "Desarrollo de interfaces: HTML, CSS, JS, componentes Astro, estilos Tailwind.",
+            "circle": 3,
+            "can_read": [
+                "workspace/<slug>/REQUIREMENTS.md",
+                "workspace/<slug>/state.json",
+                "workspace/<slug>/src/",
+                ".agents/skills/a2lt-brand-kit/",
+                ".agents/skills/ui-ux-pro-max/",
+                ".agents/skills/tailwind-architecture/",
+                ".agents/skills/astro-landing-kit/",
+                ".agents/skills/context7-resolver/",
+                ".agents/skills/stitch-designer/"
+            ],
+            "can_write": [
+                "workspace/<slug>/src/",
+                "central_intelligence.db:artifacts",
+                "central_intelligence.db:execution_logs",
+                "central_intelligence.db:checkpoints"
+            ],
+            "can_call_mcps": [
+                "context7",
+                "StitchMCP"
+            ],
+            "can_escalate_to": [
+                "orchestrator"
+            ],
+            "forbidden": [
+                "Modificar archivos de lógica backend o configuración del ecosistema (core/, tools/, rules/)",
+                "Escribir en core/ o tools/",
+                "Omitir registro de artefacto en artifacts",
+                "Generar componentes sin wireframe spec previo"
+            ],
+            "output_schema": {
+                "artifact": {
+                    "file_path": "string (ruta relativa desde workspace/<slug>/)",
+                    "file_type": "source | asset | config",
+                    "checksum": "string SHA256",
+                    "description": "string"
+                }
+            }
+        },
+        "backend_specialist": {
+            "description": "Desarrollo de lógica de servidor: modelos Django, serializers, viewsets, URL routing, esquemas SQL y tests unitarios.",
+            "circle": 3,
+            "can_read": [
+                "workspace/<slug>/REQUIREMENTS.md",
+                "workspace/<slug>/BACKLOG.md",
+                "workspace/<slug>/state.json",
+                ".agents/skills/context7-resolver/",
+                ".agents/skills/testing-tdd-architecture/",
+                ".agents/skills/django-patterns/",
+                ".agents/skills/database-architecture/",
+                ".agents/skills/api-patterns/",
+                ".agents/skills/institutional-memory/"
+            ],
+            "can_write": [
+                "workspace/<slug>/src/api/",
+                "central_intelligence.db:artifacts",
+                "central_intelligence.db:execution_logs",
+                "central_intelligence.db:checkpoints"
+            ],
+            "can_call_mcps": [
+                "context7",
+                "notebooklm"
+            ],
+            "can_escalate_to": [
+                "orchestrator",
+                "hitl"
+            ],
+            "forbidden": [
+                "Ejecutar migraciones o iniciar servidores",
+                "Modificar decisiones de arquitectura sin escalar a requirements_architect",
+                "Hardcodear credenciales o secretos en código generado",
+                "Usar cláusulas except sin especificar la excepción",
+                "Modificar archivos de frontend sin tarea asignada",
+                "Escribir sobre core/ o rules/"
+            ],
+            "output_schema": {
+                "api_artifacts": {
+                    "models": "integer",
+                    "serializers": "integer",
+                    "viewsets": "integer",
+                    "url_patterns": "integer",
+                    "tests_generated": "integer"
+                }
+            }
+        },
+        "tester": {
+            "description": "Ejecutar suites de tests, lint checks y API smoke tests contra artefactos producidos por backend y frontend. Interpretar resultados y emitir veredictos pass/fail.",
+            "circle": 3,
+            "can_read": [
+                "workspace/<slug>/src/",
+                "workspace/<slug>/REQUIREMENTS.md",
+                "central_intelligence.db:artifacts",
+                ".agents/skills/testing-tdd-architecture/"
+            ],
+            "can_write": [
+                "workspace/<slug>/reports/test_report.md",
+                "central_intelligence.db:execution_logs",
+                "central_intelligence.db:checkpoints"
+            ],
+            "can_call_mcps": [],
+            "can_escalate_to": [
+                "orchestrator",
+                "hitl"
+            ],
+            "forbidden": [
+                "Generar tests — solo ejecutar lo que backend o frontend produjeron",
+                "Ejecutar tests si hay migraciones pendientes",
+                "Ejecutar API smoke tests sin confirmar que el dev server está corriendo",
+                "Establecer timeout_s menor a 60"
+            ],
+            "output_schema": {
+                "test_results": {
+                    "verdict": "PASSED | PASSED_WITH_GAPS | FAILED | TIMEOUT",
+                    "tests_run": "integer",
+                    "tests_failed": "integer",
+                    "lint_verdict": "CLEAN | WARNINGS | BLOCKED"
+                }
+            }
+        },
+        "qa_auditor": {
+            "description": "Validación técnica: tests, revisión de código, verificación de checksum de artefactos. Emite veredictos de aprobación o rechazo.",
+            "circle": 3,
+            "can_read": [
+                "workspace/<slug>/src/",
+                "workspace/<slug>/REQUIREMENTS.md",
+                "workspace/<slug>/BACKLOG.md",
+                "central_intelligence.db:artifacts",
+                "central_intelligence.db:tasks",
+                ".agents/skills/testing-tdd-architecture/",
+                ".agents/skills/context7-resolver/",
+                ".agents/skills/audit-code-review/"
+            ],
+            "can_write": [
+                "workspace/<slug>/reports/qa_report.md",
+                "central_intelligence.db:artifacts",
+                "central_intelligence.db:execution_logs",
+                "central_intelligence.db:checkpoints"
+            ],
+            "can_call_mcps": [
+                "context7"
+            ],
+            "can_escalate_to": [
+                "orchestrator",
+                "hitl"
+            ],
+            "forbidden": [
+                "Modificar código fuente que está evaluando",
+                "Marcar tarea como COMPLETED si hay issues críticos sin resolver",
+                "Omitir verificación de checksum en artefactos"
+            ],
+            "output_schema": {
+                "qa_report": {
+                    "passed": "boolean",
+                    "artifacts_verified": "integer",
+                    "artifacts_failed": "integer",
+                    "issues": [
+                        {
+                            "severity": "low | medium | high | critical",
+                            "file": "string",
+                            "description": "string"
+                        }
+                    ],
+                    "approved_for_delivery": "boolean"
+                }
+            }
+        },
+        "docs": {
+            "description": "Generar documentación técnica y de usuario: README, referencia API y guías de usuario para audiencias no técnicas.",
+            "circle": 3,
+            "can_read": [
+                "workspace/<slug>/REQUIREMENTS.md",
+                "workspace/<slug>/BACKLOG.md",
+                "workspace/<slug>/src/",
+                ".agents/skills/architecture-documentation/",
+                ".agents/skills/geo-optimization/"
+            ],
+            "can_write": [
+                "workspace/<slug>/README.md",
+                "workspace/<slug>/docs/",
+                "central_intelligence.db:execution_logs",
+                "central_intelligence.db:checkpoints"
+            ],
+            "can_call_mcps": [],
+            "can_escalate_to": [
+                "orchestrator",
+                "hitl"
+            ],
+            "forbidden": [
+                "Modificar código fuente ni artefactos de ningún tipo",
+                "Inventar comportamientos que no existan en el código actual",
+                "Incluir credenciales reales en ejemplos de .env",
+                "Incluir detalles de implementación en guías de usuario"
+            ],
+            "output_schema": {
+                "documentation": {
+                    "readme_generated": "boolean",
+                    "api_reference_generated": "boolean",
+                    "user_guide_generated": "boolean"
+                }
+            }
+        },
+        "meta_factory": {
+            "description": "Mantener, auditar y evolucionar el ecosistema AIRON‑Cast. Único agente autorizado para modificar otros agentes y skills, siempre bajo supervisión del Operador.",
+            "circle": 0,
+            "can_read": [
+                "central_intelligence.db:feedback_history",
+                "central_intelligence.db:execution_logs",
+                ".agents/profiles/",
+                ".agents/skills/",
+                "rules/",
+                "AGENTS.md",
+                "docs/ECOSYSTEM_EVOLUTION.md",
+                ".agents/skills/context7-resolver/",
+                ".agents/skills/skill-creator-pro/"
+            ],
+            "can_write": [
+                ".agents/profiles/",
+                ".agents/skills/",
+                "central_intelligence.db:adrs",
+                "central_intelligence.db:execution_logs",
+                "manifest.json"
+            ],
+            "can_call_mcps": [
+                "context7",
+                "notebooklm"
+            ],
+            "can_escalate_to": [
+                "orchestrator",
+                "hitl"
+            ],
+            "forbidden": [
+                "Aplicar parches sin aprobación explícita del Operador",
+                "Desplegar agentes o skills con hallazgos CRITICAL de auditoría",
+                "Modificar el esquema de central_intelligence.db sin RFC aprobado",
+                "Ejecutar operaciones destructivas sin confirm=true del Operador",
+                "Modificar agentes o skills en uso por proyectos ACTIVE"
+            ],
+            "output_schema": {
+                "patch_proposal": {
+                    "component_affected": "string",
+                    "version_before": "string",
+                    "version_after": "string",
+                    "adr_registered": "string | null",
+                    "operator_approval": "boolean"
+                }
+            }
+        }
+    },
+    "hitl": {
+        "description": "Human-in-the-Loop. Punto de escalación cuando el sistema no puede auto-resolver.",
+        "trigger_conditions": [
+            "Tres fallos consecutivos en la misma tarea",
+            "STOP_LOSS activado",
+            "RFC pendiente de aprobación",
+            "Cambio arquitectural detectado",
+            "Integridad de artefacto comprometida (checksum_verified = 2)",
+            "Ambigüedad que afecte decisiones irreversibles"
+        ],
+        "protocol": "Detener ejecución → registrar en execution_logs(HITL_ESCALATION) → actualizar state.json(estado=PAUSED) → notificar al operador con contexto completo del problema"
+    }
+}
