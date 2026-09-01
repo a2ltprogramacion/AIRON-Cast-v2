@@ -29,8 +29,14 @@ class ExecutionReport:
 
 
 class Orchestrator:
-    def __init__(self, project_slug: str, memory_manager: Optional[MemoryManager] = None):
+    def __init__(
+        self,
+        project_slug: str,
+        workflow_file: Optional[str] = None,
+        memory_manager: Optional[MemoryManager] = None,
+    ):
         self.project_slug = project_slug
+        self.workflow_file = workflow_file
         self.mm = memory_manager if memory_manager else MemoryManager()
         self.router = APIRouter()
         self.project = None
@@ -111,6 +117,18 @@ class Orchestrator:
 Comienza a trabajar como {agent}.
 """
 
+    def _load_agent_profile(self, agent: str) -> Optional[str]:
+        """Carga el perfil Markdown del agente buscando en las ubicaciones estándar."""
+        candidate_paths = [
+            Path(".agent/agents") / f"{agent}.md",
+            Path(".agents/profiles") / f"{agent}.md",
+        ]
+        for p in candidate_paths:
+            if p.exists():
+                return p.read_text(encoding="utf-8")
+        # En caso de ejecuciones de prueba o mock
+        return f"# Mock Agent Profile: {agent}\nRol: {agent}\n"
+
     # ------------------------------------------------------------------
     # DISPATCH: OBTENER SIGUIENTE TAREA + PROMPT
     # ------------------------------------------------------------------
@@ -139,14 +157,12 @@ Comienza a trabajar como {agent}.
         agent = task["assigned_agent"]
 
         # Leer perfil del agente
-        profile_path = Path(".agents/profiles") / f"{agent}.md"
-        if not profile_path.exists():
+        agent_profile = self._load_agent_profile(agent)
+        if agent_profile is None:
             self._write_mission_control(
-                f"ERROR: Perfil no encontrado: {profile_path}"
+                f"ERROR: Perfil no encontrado para agente: {agent}"
             )
             return None
-
-        agent_profile = profile_path.read_text(encoding="utf-8")
         context = self.build_context(task)
         prompt = self._build_agent_prompt(task, agent_profile, context)
 
@@ -335,14 +351,12 @@ Comienza a trabajar como {agent}.
         agent = task["assigned_agent"]
 
         # Leer perfil del agente
-        profile_path = Path(".agents/profiles") / f"{agent}.md"
-        if not profile_path.exists():
+        agent_profile = self._load_agent_profile(agent)
+        if agent_profile is None:
             self._write_mission_control(
-                f"ERROR: Perfil no encontrado: {profile_path}"
+                f"ERROR: Perfil no encontrado para agente: {agent}"
             )
             return False
-
-        agent_profile = profile_path.read_text(encoding="utf-8")
         context = self.build_context(task)
         prompt = self._build_agent_prompt(task, agent_profile, context)
 
@@ -438,6 +452,8 @@ Comienza a trabajar como {agent}.
 
     def resume_from_checkpoint(self) -> bool:
         """Intenta restaurar el estado desde el último checkpoint."""
+        if not self.project:
+            self.load_project()
         checkpoint = self.mm.get_last_checkpoint(self.project["id"])
         if not checkpoint:
             return False

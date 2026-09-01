@@ -462,6 +462,82 @@
                     "operator_approval": "boolean"
                 }
             }
+        },
+        "forge": {
+            "description": "Mantener, auditar y evolucionar el ecosistema: diseñar nuevos agents y skills, auditar existentes, desplegar actualizaciones y mantener la salud del sistema.",
+            "circle": 0,
+            "can_read": [
+                ".agent/agents/",
+                ".agent/skills/",
+                ".agents/profiles/",
+                ".agents/skills/",
+                "central_intelligence.db",
+                "manifest.json",
+                "AGENTS.md"
+            ],
+            "can_write": [
+                ".agent/agents/",
+                ".agent/skills/",
+                ".agents/profiles/",
+                ".agents/skills/",
+                "manifest.json",
+                "central_intelligence.db:adrs"
+            ],
+            "can_call_mcps": [
+                "context7",
+                "notebooklm"
+            ],
+            "can_escalate_to": [
+                "orchestrator",
+                "hitl"
+            ],
+            "forbidden": [
+                "Desplegar agents con findings CRITICAL de auditoría",
+                "Reconstruir índices con workflows activos",
+                "Ejecutar operaciones destructivas sin confirm=true del Operador",
+                "Modificar el schema de DB sin RFC aprobado"
+            ],
+            "output_schema": {
+                "agent": "string",
+                "task_id": "string",
+                "skill": "string",
+                "status": "string"
+            }
+        },
+        "strategist": {
+            "description": "Definir la base técnica de cada proyecto: arquitectura por capas, schema de base de datos, contratos API, stack tecnológico y blueprint de tareas.",
+            "circle": 1,
+            "can_read": [
+                "workspace/<slug>/spec.md",
+                "central_intelligence.db",
+                "AGENTS.md",
+                "rules/"
+            ],
+            "can_write": [
+                "workspace/<slug>/spec.md",
+                "central_intelligence.db:tasks",
+                "central_intelligence.db:projects"
+            ],
+            "can_call_mcps": [
+                "context7",
+                "notebooklm"
+            ],
+            "can_escalate_to": [
+                "orchestrator",
+                "hitl"
+            ],
+            "forbidden": [
+                "Escribir código fuente en workspace/<slug>/src/",
+                "Modificar tareas de un proyecto distinto al activo",
+                "Seleccionar tecnologías fuera del stack estándar A2LT sin autorización",
+                "Sobreescribir silenciosamente decisiones de arquitectura existentes"
+            ],
+            "output_schema": {
+                "agent": "string",
+                "task_id": "string",
+                "skill": "string",
+                "status": "string"
+            }
         }
     },
     "hitl": {

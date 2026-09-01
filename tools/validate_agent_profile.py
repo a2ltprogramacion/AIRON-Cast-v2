@@ -16,6 +16,13 @@ import re
 import sys
 import yaml
 
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 
 # Mandatory frontmatter fields
 REQUIRED_FRONTMATTER = ["role", "circle", "scope", "version"]

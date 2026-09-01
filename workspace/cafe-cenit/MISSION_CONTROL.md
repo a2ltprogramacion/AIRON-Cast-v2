@@ -74,3 +74,6 @@ Café Cenit es un tostador venezolano de café de origen único. Esta landing bu
 [2026-06-06 16:21:17 UTC] Tarea 13 → REVIEW (pendiente de QA)
 [2026-06-12 17:13:59 UTC] Tarea 44 → IN_PROGRESS (backend_specialist)
 [2026-06-12 17:18:09 UTC] Tarea 44 → REVIEW (pendiente de QA)
+[2026-09-01 19:32:11 UTC] Tarea 6 → IN_PROGRESS (ux-ui_specialist)
+[2026-09-01 19:55:19 UTC] Tarea 7 → IN_PROGRESS (writer)
+[2026-09-01 20:05:38 UTC] Tarea 8 → IN_PROGRESS (frontend_worker)

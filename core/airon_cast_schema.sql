@@ -138,7 +138,6 @@ CREATE TABLE IF NOT EXISTS adrs (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     project_id      INTEGER,
     decision_id     TEXT    NOT NULL,               -- p.ej. 'ADR-001' (unico por proyecto)
-    UNIQUE (project_id, decision_id),
     title           TEXT    NOT NULL,
     rationale       TEXT,
     applied_agents  TEXT,                           -- JSON array de agentes afectados
@@ -146,6 +145,7 @@ CREATE TABLE IF NOT EXISTS adrs (
                             CHECK (status IN ('active','superseded','deprecated')),
     fts_content     TEXT,                           -- contenido indexado para búsqueda semántica
     created_at      TEXT    NOT NULL DEFAULT (datetime('now')),
+    UNIQUE (project_id, decision_id),
     FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL
 );
 

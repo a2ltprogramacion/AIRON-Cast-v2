@@ -102,89 +102,117 @@ El harness detiene todo y notifica (modo B: notificación) si:
 
 ---
 
+
 ## 6. Herramientas y Jurisdicción (Mediación Obligatoria)
 
 | Herramienta | Ubicación | Jurisdicción |
 |---|---|---|
-| `engram` (MCP) | `~/.engram/engram.db` | Memoria persistente, búsqueda, git sync |
-| `memory_manager.py` | `.opencode/harness/` | Wrapper Engram para AIRON-Cast patterns |
-| `trajectory_compressor.py` | `.opencode/harness/` | Compresión agente-dirigida |
-| `api_router.py` | `.opencode/harness/` | Fallback models + caché |
-| `checksum_verifier.py` | `.opencode/harness/` | Integridad artefactos |
-| `hitl_gateway.py` | `.opencode/harness/` | Notificación operador (modo B) |
-| `context7-resolver` | Skill | Docs live para librerías |
-| Skills OpenCode | `.opencode/skills/` | Capabilities on-demand |
+| `central_intelligence.db` | Raíz del proyecto | Memoria persistente, SQLite + FTS5, tareas, checkpoints |
+| `memory_manager.py` | `core/` | Único punto de mediación y persistencia hacia DB |
+| `orchestrator.py` | `core/` | Motor de despacho Round-Robin y asignación de agentes |
+| `service_supervisor.py` | `core/` | Watchdog de auto-supervisión y auto-recuperación de servicios |
+| `api_router.py` | `core/` | Fallback chain para modelos $0 y caché |
+| `checksum_verifier.py` | `core/` | Integridad de artefactos SHA256 |
+| `hitl_gateway.py` | `core/` | Puerta de enlace con el operador (modo B) |
+| `airon_executor.py` | `tools/` | CLI principal de ejecución y despacho |
+| `airon_nl.py` | `tools/` | Interfaz en lenguaje natural para control del ecosistema |
+| `dashboard_server.py` | `tools/` | Servidor Web de monitoreo en tiempo real |
+| Skills & Perfiles | `.agent/` / `.agents/` | 60 skills de desarrollo + 13 perfiles de agentes |
 
-**Principio:** Ningún tool call directo a BD/FS/API sin mediador validado.
-
----
-
-## 7. Aprendizaje Continuo (Meta-Factory + Engram)
-
-- Engram `mem_search` feedback_history → patrones recurrentes
-- `recurrence_count > 2` → propuesta parche a perfil agente (HITL modo B)
-- Parche aprobado → actualiza `.opencode/agents/<role>.md` + version bump
-- ADR registrado si parche modifica comportamiento arquitectónico
+**Principio:** Ningún tool call directo a BD/FS sin mediador validado.
 
 ---
 
-## 8. Auto-Supervisión (Engram Daemon)
+## 7. Aprendizaje Continuo (Meta-Factory)
 
-- Engram MCP server corre como daemon (stdio/HTTP)
-- Health check: `engram doctor` + DB integrity
-- Project isolation: `~/.opencode/airon/<slug>/engram.db` por proyecto
-- Log rotation: 1MB → 200 líneas (Engram config)
+- Búsqueda en `feedback_history` → patrones recurrentes
+- `recurrence_count > 2` → propuesta de parche a perfil de agente (HITL)
+- Parche aprobado → actualiza `.agent/agents/<role>.md` + version bump
+- ADR registrado si el parche modifica comportamiento arquitectónico
 
 ---
 
-## Apéndice: Estructura del Repositorio Fusionado
+## 8. Auto-Supervisión (Watchdog Daemon)
+
+- Watchdog portable autónomo: `tools/airon_supervisor.py`
+- Health checks de bajo nivel vía sockets para prevenir deadlocks HTTP
+- Auto-curación: si el dashboard o la base de datos caen, se reactivan automáticamente
+- Log rotation y monitoreo en vivo disponible en `http://localhost:8765`
+
+---
+
+## Apéndice: Estructura del Repositorio Consolidado
 
 ```
-AIRON-Cast/                          # Raíz ecosistema (persiste para otros IDEs)
+AIRON-Cast/                          # Raíz del ecosistema (Edición Final Definitiva)
 ├── AGENTS.md                        # Constitución unificada (ESTE ARCHIVO)
-├── .opencode/                       # Configuración OpenCode nativa
-│   ├── opencode.json                # Config principal
-│   ├── AGENTS.md                    # Link/symlink a raíz
-│   ├── agents/                      # 11 perfiles migrados
-│   │   ├── orchestrator.md
-│   │   ├── pm.md
-│   │   ├── requirements_architect.md
-│   │   ├── ux-ui_specialist.md
-│   │   ├── writer.md
-│   │   ├── frontend_worker.md
-│   │   ├── backend_specialist.md
-│   │   ├── tester.md
-│   │   ├── qa_auditor.md
-│   │   ├── docs.md
-│   │   └── meta_factory.md
-│   ├── skills/                      # 25 skills migradas
-│   ├── hooks/                       # Harness hooks
-│   │   ├── pre_tool_call.py
-│   │   ├── post_tool_call.py
-│   │   ├── pre_llm_call.py
-│   │   └── checkpoint_enforcer.py
-│   ├── harness/                     # Core harness modules
-│   │   ├── memory_manager.py
-│   │   ├── trajectory_compressor.py
-│   │   ├── api_router.py
-│   │   ├── checksum_verifier.py
-│   │   └── hitl_gateway.py
-│   └── memory/                      # Engram DBs por proyecto
-│       └── <slug>/
-│           └── engram.db
-├── .agents/                         # Legacy AIRON-Cast (read-only ref)
-├── core/                            # Legacy core modules (ref)
-├── tools/                           # Legacy CLI tools (ref)
+├── MANUAL_DE_OPERACION.md           # Manual de operación paso a paso
+├── MISSION_CONTROL.md               # Bitácora narrativa de hitos
+├── manifest.json                    # Contratos de capacidades y restricciones
+├── requirements.txt                 # Dependencias Python mínimas
+├── .gitignore                       # Filtros de exclusión limpios
+├── central_intelligence.db          # Persistencia SQLite + FTS5
+│
+├── .agent/                          # Personalizaciones canónicas Antigravity
+│   ├── agents/                      # 13 perfiles de agentes
+│   ├── skills/                      # 60 skills consolidadas
+│   ├── workflows/                   # 8 workflows operativos
+│   └── scripts/                     # Scripts auxiliares
+│
+├── .agents/                         # Mirror para compatibilidad de IDE
+│   ├── profiles/                    # 13 perfiles de agentes
+│   ├── skills/                      # 60 skills consolidadas
+│   └── workflows/                   # 8 workflows operativos
+│
+├── core/                            # Motor del ecosistema
+│   ├── airon_cast_schema.sql        # Esquema SQL con FTS5 y triggers
+│   ├── memory_manager.py            # Mediador único hacia DB
+│   ├── orchestrator.py              # Motor Round-Robin
+│   ├── service_supervisor.py        # Watchdog y health checks
+│   ├── api_router.py                # Fallback models + caché
+│   ├── checksum_verifier.py         # Integridad SHA256
+│   ├── hitl_gateway.py              # Escalación al operador
+│   ├── trajectory_compressor.py     # Compresión de trayectoria
+│   └── validator.py                 # Validación de outputs
+│
+├── tools/                           # CLIs y servicios locales
+│   ├── airon_executor.py            # CLI principal de despacho
+│   ├── airon_nl.py                  # Control en lenguaje natural
+│   ├── airon_supervisor.py          # Watchdog en segundo plano
+│   ├── dashboard_server.py          # Servidor web del dashboard
+│   ├── stop_supervisor.py           # Detención limpia de servicios
+│   ├── init_ecosystem.py            # Inicialización de DB
+│   └── ...
+│
+├── dashboard/                       # Interfaz Web local (puerto 8765)
+│   └── index.html                   # SPA reactiva con telemetría
+│
+├── rules/                           # Reglas de gobernanza
+│   ├── global.md                    # Reglas globales del sistema
+│   ├── ceo.md                       # Directrices del operador
+│   └── jurisdiction.md              # Jurisdicción de agentes
+│
+├── test/                            # Suite de pruebas automatizadas
+│   ├── test_core_integration.py     # Integración de orquestador y tareas
+│   └── test_memory_manager.py       # Integridad de DB y checkpoints
+│
+├── docs/                            # Documentación técnica esencial
+│   ├── ECOSYSTEM_EVOLUTION.md       # Versionado semántico y evolución de skills
+│   ├── EXECUTOR_MODE.md             # Protocolo del modo ejecutor
+│   ├── HANDOFF_CONTEXT.md           # Contexto para nuevas sesiones
+│   └── ghl_api_v2_panorama.md       # Referencia API GoHighLevel
+│
 ├── workspace/                       # Proyectos activos
 │   └── <slug>/
 │       ├── BACKLOG.md
 │       ├── MISSION_CONTROL.md
 │       ├── state.json
 │       └── src/
-└── output/                          # Entregas finales
+│
+└── logs/                            # Bitácoras de ejecución (gitignored)
 ```
 
 ---
 
-> **"OpenCode ejecuta. AIRON-Cast gobierna. Engram recuerda. Juntos: desarrollo determinista, $0, auditable."**
-> — Fusión Manifesto, v2.0.0
+> **"AIRON-Cast: Desarrollo determinista, $0 budget, auditable y autónomo."**
+> — A2LT Soluciones

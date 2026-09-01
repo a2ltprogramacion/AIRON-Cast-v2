@@ -19,6 +19,16 @@ from typing import Optional, Tuple
 
 DEFAULT_DB_PATH = Path(__file__).resolve().parent.parent / "central_intelligence.db"
 
+# Cadena de modelos gratuitos sugeridos ($0 Budget)
+FREE_MODEL_CHAIN = [
+    {"role": "coding_reasoning", "model": "deepseek/deepseek-chat-v3-0324:free", "provider": "openrouter"},
+    {"role": "high_throughput", "model": "meta-llama/llama-3.3-70b-instruct:free", "provider": "openrouter"},
+    {"role": "code_specialist", "model": "qwen/qwen-2.5-coder-32b-instruct:free", "provider": "openrouter"},
+    {"role": "ultra_fast", "model": "llama-3.1-8b-instant", "provider": "groq"},
+    {"role": "multimodal_reasoning", "model": "gemini-2.0-flash", "provider": "google-free-tier"},
+    {"role": "local_offline", "model": "qwen2.5-coder:7b", "provider": "ollama"},
+]
+
 
 class APIRouter:
     """

@@ -22,6 +22,13 @@ import sqlite3
 import argparse
 from datetime import datetime, timezone
 
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 
 DB_FILENAME = "central_intelligence.db"
 

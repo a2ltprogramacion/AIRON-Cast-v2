@@ -100,7 +100,7 @@ cambiar de modelo simplemente cambiándolo en el IDE, sin tocar configuración.
 
 ---
 
-## 5. Loop de Orquestación (Round‑Robin con contexto)
+## 5. Flujo de Trabajo (Loop de Orquestación Round‑Robin con contexto)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐

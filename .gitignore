@@ -41,5 +41,15 @@ build/
 
 # Node (Astro frontend in workspace projects)
 node_modules/
+**/node_modules/
 .npm/
 .pnpm-store/
+
+# Workspace test artifacts
+workspace/a/
+workspace/p/
+workspace/test-*/
+*.db-journal
+*.db-wal
+*.db-shm
+

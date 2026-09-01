@@ -15,6 +15,12 @@ import sys
 import re
 import yaml
 
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 
 def extract_frontmatter(content: str) -> dict:
     """Extract YAML frontmatter from a markdown file."""

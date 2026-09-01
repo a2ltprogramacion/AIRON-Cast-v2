@@ -102,7 +102,8 @@ def run_executor(cmd, args):
         except Exception as e:
             return 1, "", str(e)
     
-    base = ['python', 'tools/airon_executor.py', cmd]
+    actual_cmd = "status" if cmd == "status_all" else cmd
+    base = ['python', 'tools/airon_executor.py', actual_cmd]
     
     if args.get('slug'):
         base.append(args['slug'])

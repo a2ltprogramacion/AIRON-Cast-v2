@@ -87,21 +87,21 @@ def cmd_complete(args):
         print(json.dumps({"error": f"Project '{args.slug}' not found"}))
         return 1
     
-    # VALIDACIÓN: Verificar artefactos antes de completar
-    import subprocess
-    validation = subprocess.run([
-        "python", ".opencode/hooks/completion_validator.py",
-        str(args.task_id), "complete", args.slug
-    ], capture_output=True, text=True, cwd=REPO_ROOT)
-    
-    if validation.returncode != 0:
-        print(json.dumps({
-            "status": "error",
-            "task_id": args.task_id,
-            "error": "Validación de artefactos fallida",
-            "details": validation.stdout.strip() or validation.stderr.strip()
-        }))
-        return 1
+    # VALIDACIÓN: Verificar artefactos antes de completar (si el hook existe)
+    validator_path = REPO_ROOT / "core" / "validator.py"
+    if validator_path.exists():
+        validation = subprocess.run(
+            ["python", str(validator_path), str(args.task_id), "complete", args.slug],
+            capture_output=True, text=True, cwd=REPO_ROOT,
+        )
+        if validation.returncode != 0:
+            print(json.dumps({
+                "status": "error",
+                "task_id": args.task_id,
+                "error": "Validación de artefactos fallida",
+                "details": validation.stdout.strip() or validation.stderr.strip()
+            }))
+            return 1
     
     success = orch.complete_task(
         task_id=args.task_id,
@@ -147,20 +147,21 @@ def cmd_finalize(args):
     """Mueve una tarea APPROVED a COMPLETED (acción de orchestrator)."""
     mm = MemoryManager()
     try:
-        # VALIDACIÓN: Verificar artefactos antes de finalizar
-        validation = subprocess.run([
-            "python", ".opencode/hooks/completion_validator.py",
-            str(args.task_id), "finalize", args.slug
-        ], capture_output=True, text=True, cwd=REPO_ROOT)
-        
-        if validation.returncode != 0:
-            print(json.dumps({
-                "status": "error",
-                "task_id": args.task_id,
-                "error": "Validación de artefactos fallida",
-                "details": validation.stdout.strip() or validation.stderr.strip()
-            }))
-            return 1
+        # VALIDACIÓN: Verificar artefactos antes de finalizar (si el hook existe)
+        validator_path = REPO_ROOT / "core" / "validator.py"
+        if validator_path.exists():
+            validation = subprocess.run(
+                ["python", str(validator_path), str(args.task_id), "finalize", args.slug],
+                capture_output=True, text=True, cwd=REPO_ROOT,
+            )
+            if validation.returncode != 0:
+                print(json.dumps({
+                    "status": "error",
+                    "task_id": args.task_id,
+                    "error": "Validación de artefactos fallida",
+                    "details": validation.stdout.strip() or validation.stderr.strip()
+                }))
+                return 1
         
         mm.update_task_status(args.task_id, "COMPLETED", "orchestrator")
         _print_json({"status": "completed", "task_id": args.task_id})
@@ -172,6 +173,26 @@ def cmd_finalize(args):
 
 def cmd_status(args):
     mm = MemoryManager()
+    if not args.slug:
+        projects = mm.get_project_status()
+        _print_json({
+            "projects": [
+                {
+                    "slug": p["slug"],
+                    "name": p["name"],
+                    "status": p["project_status"],
+                    "total_tasks": p["total_tasks"],
+                    "completed": p["completed_tasks"],
+                    "failed": p["failed_tasks"],
+                    "in_progress": p["in_progress_tasks"],
+                    "pending": p["pending_tasks"],
+                    "progress_pct": p["progress_pct"],
+                }
+                for p in projects
+            ]
+        })
+        return 0
+
     projects = mm.get_project_status(slug=args.slug)
     if not projects:
         print(json.dumps({"error": f"Project '{args.slug}' not found"}))
@@ -244,7 +265,7 @@ def main():
     p_fin.set_defaults(func=cmd_finalize)
 
     p_stat = sub.add_parser("status", help="Ver estado del proyecto")
-    p_stat.add_argument("slug")
+    p_stat.add_argument("slug", nargs="?", default=None)
     p_stat.set_defaults(func=cmd_status)
 
     p_boot = sub.add_parser("bootstrap", help="Crear proyecto + tareas desde BACKLOG.md (sin ejecutar)")

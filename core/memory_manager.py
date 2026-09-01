@@ -36,14 +36,25 @@ class MemoryManager:
     """
 
     def __init__(self, db_path: Optional[Union[str, Path]] = None):
-        self.db_path = Path(db_path) if db_path else DEFAULT_DB_PATH
-        self._ensure_db()
+        self.db_path = Path(db_path) if db_path and str(db_path) != ":memory:" else db_path or DEFAULT_DB_PATH
+        self._mem_conn = None
+        if str(self.db_path) == ":memory:":
+            self._mem_conn = sqlite3.connect(":memory:")
+            self._mem_conn.row_factory = sqlite3.Row
+            self._mem_conn.execute("PRAGMA foreign_keys = ON")
+            if SCHEMA_PATH.exists():
+                self._mem_conn.executescript(SCHEMA_PATH.read_text(encoding="utf-8"))
+            print(f"[MemoryManager] DB inicializada: :memory:")
+        else:
+            self._ensure_db()
 
     # ------------------------------------------------------------------
     # CONEXIÓN
     # ------------------------------------------------------------------
 
     def _connect(self) -> sqlite3.Connection:
+        if self._mem_conn is not None:
+            return self._mem_conn
         conn = sqlite3.connect(str(self.db_path))
         conn.row_factory = sqlite3.Row
         conn.execute("PRAGMA foreign_keys = ON")

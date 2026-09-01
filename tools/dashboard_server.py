@@ -13,9 +13,11 @@ Usage:
 import http.server
 import json
 import os
+import re
 import sqlite3
 import sys
 import time
+import yaml
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
@@ -51,6 +53,189 @@ def json_endpoint(handler, data):
     handler.send_header("Access-Control-Allow-Origin", "*")
     handler.end_headers()
     handler.wfile.write(json.dumps(data, default=str).encode("utf-8"))
+
+
+def get_all_agents_info():
+    """
+    Descubre dinámicamente todos los agentes fusionando:
+    1. manifest.json (contratos formales, circle, can_read, can_write, forbidden)
+    2. Perfiles Markdown en .agent/agents/ y .agents/profiles/
+    3. central_intelligence.db (tarea actual IN_PROGRESS, tareas READY, métricas, logs)
+    """
+    manifest_file = REPO_ROOT / "manifest.json"
+    manifest_agents = {}
+    if manifest_file.exists():
+        try:
+            with open(manifest_file, "r", encoding="utf-8") as f:
+                manifest_agents = json.load(f).get("agents", {})
+        except Exception:
+            pass
+
+    # Descubrir carpetas de perfiles
+    profile_dirs = [REPO_ROOT / ".agent" / "agents", REPO_ROOT / ".agents" / "profiles"]
+    discovered_files = {}
+    for pdir in profile_dirs:
+        if pdir.exists():
+            for p in pdir.glob("*.md"):
+                if p.stem not in discovered_files:
+                    discovered_files[p.stem] = p
+
+    # Identificar todas las skills válidas del sistema
+    valid_skills = set()
+    skills_dirs = [REPO_ROOT / ".agent" / "skills", REPO_ROOT / ".agents" / "skills"]
+    for sdir in skills_dirs:
+        if sdir.exists():
+            for d in sdir.iterdir():
+                if d.is_dir():
+                    valid_skills.add(d.name)
+
+    all_slugs = sorted(set(list(manifest_agents.keys()) + list(discovered_files.keys())))
+
+    conn = get_db()
+    results = []
+
+    for slug in all_slugs:
+        m = manifest_agents.get(slug, {})
+        p = discovered_files.get(slug)
+
+        fm = {}
+        content = ""
+        matched_skills = []
+        upstream = None
+        downstream = None
+        version = "1.0.0"
+
+        if p and p.exists():
+            try:
+                content = p.read_text(encoding="utf-8")
+                # Extraer frontmatter
+                fm_match = re.match(r"^---\s*\n(.*?)\n---", content, re.DOTALL)
+                if fm_match:
+                    fm = yaml.safe_load(fm_match.group(1)) or {}
+
+                # Extraer skills comparando contra valid_skills
+                words = re.findall(r"[a-zA-Z0-9_-]+", content)
+                matched_skills = sorted(list(set(w for w in words if w in valid_skills)))
+
+                # Extraer Upstream / Downstream
+                up_match = re.search(r"-\s+\*\*Upstream:\*\*\s*(.*?)\n", content)
+                if up_match:
+                    upstream = up_match.group(1).strip()
+                down_match = re.search(r"-\s+\*\*Downstream:\*\*\s*(.*?)\n", content)
+                if down_match:
+                    downstream = down_match.group(1).strip()
+
+                version = str(fm.get("version", "1.0.0"))
+            except Exception:
+                pass
+
+        # Si en manifest.json hay skills en can_read, agregarlas
+        if "can_read" in m:
+            for rpath in m["can_read"]:
+                for s in valid_skills:
+                    if s in rpath and s not in matched_skills:
+                        matched_skills.append(s)
+        matched_skills.sort()
+
+        circle = fm.get("circle", m.get("circle", 3))
+        scope = fm.get("scope", "restricted")
+        description = m.get("description") or fm.get("role") or slug.replace("_", " ").title()
+        name = slug.replace("_", " ").title()
+
+        # Consultar DB: tarea actual en proyectos ACTIVE
+        cur_task = conn.execute(
+            """
+            SELECT t.id, t.title, p.slug, t.priority, t.status, t.started_at
+            FROM tasks t
+            JOIN projects p ON p.id = t.project_id
+            WHERE t.assigned_agent = ? AND t.status = 'IN_PROGRESS' AND p.status = 'ACTIVE'
+            ORDER BY t.started_at DESC LIMIT 1
+            """,
+            (slug,),
+        ).fetchone()
+
+        # Tareas en espera en proyectos ACTIVE
+        ready_tasks = conn.execute(
+            """
+            SELECT t.id, t.title, p.slug, t.priority
+            FROM tasks t
+            JOIN projects p ON p.id = t.project_id
+            WHERE t.assigned_agent = ? AND t.status = 'READY' AND p.status = 'ACTIVE'
+            ORDER BY t.priority DESC, t.created_at ASC
+            """,
+            (slug,),
+        ).fetchall()
+
+        # Conteo completadas y fallidas
+        stats = conn.execute(
+            """
+            SELECT
+                SUM(CASE WHEN status = 'COMPLETED' THEN 1 ELSE 0 END) as completed,
+                SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) as failed
+            FROM tasks WHERE assigned_agent = ?
+            """,
+            (slug,),
+        ).fetchone()
+
+        # Último log en execution_logs
+        last_log = conn.execute(
+            """
+            SELECT created_at, outcome, tokens_used
+            FROM execution_logs
+            WHERE agent_name = ?
+            ORDER BY created_at DESC LIMIT 1
+            """,
+            (slug,),
+        ).fetchone()
+
+        # Tokens totales
+        tokens_row = conn.execute(
+            "SELECT SUM(tokens_used) as t FROM execution_logs WHERE agent_name = ?",
+            (slug,),
+        ).fetchone()
+        total_tokens = tokens_row["t"] if tokens_row and tokens_row["t"] else 0
+
+        # Determinar Estatus
+        if cur_task:
+            status = "activo"
+        elif (stats["failed"] and stats["failed"] > 0) or (last_log and last_log["outcome"] == "failure"):
+            status = "dañado"
+        elif len(ready_tasks) > 0:
+            status = "en_espera"
+        else:
+            status = "reposo"
+
+        last_used = None
+        if last_log and last_log["created_at"]:
+            last_used = str(last_log["created_at"])
+        elif fm.get("last_used"):
+            last_used = str(fm.get("last_used"))
+
+        results.append({
+            "slug": slug,
+            "name": name,
+            "circle": circle,
+            "scope": scope,
+            "version": version,
+            "status": status,
+            "skills": matched_skills,
+            "skills_count": len(matched_skills),
+            "current_task": dict(cur_task) if cur_task else None,
+            "ready_tasks_count": len(ready_tasks),
+            "completed_tasks": stats["completed"] or 0,
+            "failed_tasks": stats["failed"] or 0,
+            "upstream": upstream,
+            "downstream": downstream,
+            "last_used": last_used,
+            "total_tokens": total_tokens,
+            "description": description,
+            "has_manifest": bool(m),
+            "has_profile": bool(p),
+        })
+
+    conn.close()
+    results.sort(key=lambda x: (x["circle"], x["slug"]))
+    return results
 
 
 class DashboardHandler(http.server.BaseHTTPRequestHandler):
@@ -155,15 +340,29 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
             self._handle_health()
             return
 
+        # Endpoint: lista dinámica de agentes con estatus, skills, actividad y métricas
+        if path == "/api/agents":
+            agents = get_all_agents_info()
+            json_endpoint(self, agents)
+            return
+
         # Endpoint: proyectos
         if path == "/api/projects":
             conn = get_db()
             rows = conn.execute(
-                "SELECT slug, name, project_status, total_tasks, completed_tasks, failed_tasks, in_progress_tasks, pending_tasks, progress_pct, last_activity FROM v_project_status ORDER BY completed_tasks DESC"
+                """
+                SELECT p.id, v.slug, v.name, v.project_status, v.total_tasks,
+                       v.completed_tasks, v.failed_tasks, v.in_progress_tasks,
+                       v.pending_tasks, v.progress_pct, v.last_activity
+                FROM v_project_status v
+                JOIN projects p ON p.slug = v.slug
+                ORDER BY p.id ASC
+                """
             ).fetchall()
             conn.close()
             json_endpoint(self, [dict(r) for r in rows])
             return
+
 
         # Endpoint: tareas
         if path == "/api/tasks":
