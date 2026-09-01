@@ -346,21 +346,58 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
             json_endpoint(self, agents)
             return
 
-        # Endpoint: proyectos
+        # Endpoint: proyectos (con soporte para paginacion y orden activos/recientes al top)
         if path == "/api/projects":
+            page = params.get("page", [None])[0]
+            per_page = int(params.get("per_page", [5])[0]) if page else None
+
             conn = get_db()
-            rows = conn.execute(
-                """
-                SELECT p.id, v.slug, v.name, v.project_status, v.total_tasks,
-                       v.completed_tasks, v.failed_tasks, v.in_progress_tasks,
-                       v.pending_tasks, v.progress_pct, v.last_activity
-                FROM v_project_status v
-                JOIN projects p ON p.slug = v.slug
-                ORDER BY p.id ASC
-                """
-            ).fetchall()
-            conn.close()
-            json_endpoint(self, [dict(r) for r in rows])
+            order_sql = """
+                ORDER BY 
+                    CASE WHEN v.project_status = 'ACTIVE' THEN 0 ELSE 1 END ASC,
+                    COALESCE(v.last_activity, p.created_at) DESC,
+                    p.id ASC
+            """
+
+            if page:
+                page_num = max(1, int(page))
+                offset = (page_num - 1) * per_page
+                total = conn.execute("SELECT COUNT(*) as c FROM projects").fetchone()["c"]
+                rows = conn.execute(
+                    f"""
+                    SELECT p.id, v.slug, v.name, v.project_status, v.total_tasks,
+                           v.completed_tasks, v.failed_tasks, v.in_progress_tasks,
+                           v.pending_tasks, v.progress_pct, v.last_activity
+                    FROM v_project_status v
+                    JOIN projects p ON p.slug = v.slug
+                    {order_sql}
+                    LIMIT ? OFFSET ?
+                    """,
+                    (per_page, offset),
+                ).fetchall()
+                conn.close()
+                json_endpoint(self, {
+                    "items": [dict(r) for r in rows],
+                    "pagination": {
+                        "page": page_num,
+                        "per_page": per_page,
+                        "total": total,
+                        "total_pages": max(1, -(-total // per_page)),
+                    },
+                })
+            else:
+                rows = conn.execute(
+                    f"""
+                    SELECT p.id, v.slug, v.name, v.project_status, v.total_tasks,
+                           v.completed_tasks, v.failed_tasks, v.in_progress_tasks,
+                           v.pending_tasks, v.progress_pct, v.last_activity
+                    FROM v_project_status v
+                    JOIN projects p ON p.slug = v.slug
+                    {order_sql}
+                    """
+                ).fetchall()
+                conn.close()
+                json_endpoint(self, [dict(r) for r in rows])
             return
 
 

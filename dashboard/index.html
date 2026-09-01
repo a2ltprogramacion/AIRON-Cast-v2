@@ -224,6 +224,7 @@
       grid-template-columns: 1.35fr 1fr;
       gap: 24px;
       margin-bottom: 28px;
+      align-items: stretch;
     }
     @media (max-width: 1100px) {
       .main-grid { grid-template-columns: 1fr; }
@@ -238,6 +239,10 @@
       display: flex;
       flex-direction: column;
       gap: 16px;
+    }
+    .panel-timeline-full {
+      height: 100%;
+      justify-content: space-between;
     }
     .panel-header {
       display: flex;
@@ -838,6 +843,16 @@
             </tbody>
           </table>
         </div>
+
+        <!-- BARRA DE PAGINACIÓN NUMERADA PARA PROYECTOS -->
+        <div class="pagination-bar" id="projects-pagination-bar" style="display:none;">
+          <div class="pagination-info" id="projects-pagination-info">
+            Página 1 de 1
+          </div>
+          <div class="pagination-controls" id="projects-pagination-controls">
+            <!-- Botones numéricos generados dinámicamente -->
+          </div>
+        </div>
       </div>
 
       <!-- TABLA DE TAREAS RECIENTES CON ID -->
@@ -881,7 +896,7 @@
     </div>
 
     <!-- PANEL DERECHO: TIMELINE PAGINADO NUMERADO -->
-    <div class="panel">
+    <div class="panel panel-timeline-full">
       <div class="panel-header">
         <span>⏱️ Timeline de Actividad</span>
         <span class="id-badge" id="timeline-total-badge">0 eventos</span>
@@ -996,13 +1011,17 @@
   </div>
 
   <script>
-    let currentTimelinePage = 1;
-    const timelinePerPage = 7;
-    let totalTimelinePages = 1;
+    let currentProjectsPage = 1;
+    const projectsPerPage = 5;
+    let totalProjectsPages = 1;
 
     let currentTasksPage = 1;
     const tasksPerPage = 8;
     let totalTasksPages = 1;
+
+    let currentTimelinePage = 1;
+    const timelinePerPage = 7;
+    let totalTimelinePages = 1;
 
     let cachedAgents = [];
     let currentAgentFilter = 'all';
@@ -1122,27 +1141,40 @@
       }
     }
 
-    // 3. Cargar Proyectos (/api/projects) con ID explícito
-    async function loadProjects() {
+    // 3. Cargar Proyectos Paginados Numerados (/api/projects) con ID explícito
+    async function loadProjects(page = currentProjectsPage) {
       try {
-        const res = await fetch('/api/projects');
+        currentProjectsPage = page;
+        const res = await fetch(`/api/projects?page=${page}&per_page=${projectsPerPage}`);
         if (!res.ok) return;
-        const projects = await res.json();
+        const data = await res.json();
+        const projects = data.items || [];
+        const pagination = data.pagination || {};
+        totalProjectsPages = pagination.total_pages || 1;
+
         const tbody = document.getElementById('projects-table');
         const filterSelect = document.getElementById('tasks-project-filter');
 
         if (projects.length === 0) {
           tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Sin proyectos registrados</td></tr>';
+          document.getElementById('projects-pagination-bar').style.display = 'none';
           return;
         }
 
         if (filterSelect.options.length <= 1) {
-          projects.forEach(p => {
-            const opt = document.createElement('option');
-            opt.value = p.slug;
-            opt.textContent = `${p.name} (#P${p.id || p.slug})`;
-            filterSelect.appendChild(opt);
-          });
+          // Poblar opciones del selector con llamada completa sin paginar si hace falta
+          fetch('/api/projects').then(r => r.json()).then(allProj => {
+            if (Array.isArray(allProj)) {
+              allProj.forEach(p => {
+                if (!Array.from(filterSelect.options).some(o => o.value === p.slug)) {
+                  const opt = document.createElement('option');
+                  opt.value = p.slug;
+                  opt.textContent = `${p.name} (#P${p.id || p.slug})`;
+                  filterSelect.appendChild(opt);
+                }
+              });
+            }
+          }).catch(() => {});
         }
 
         tbody.innerHTML = projects.map(p => `
@@ -1150,7 +1182,7 @@
             <td><span class="id-badge">#P${p.id || '--'}</span></td>
             <td style="font-family:'JetBrains Mono',monospace; font-weight:600; color:#818cf8;">${p.slug}</td>
             <td style="font-weight:600;">${p.name}</td>
-            <td><span class="tag tag-active">${p.project_status}</span></td>
+            <td><span class="tag ${p.project_status === 'ACTIVE' ? 'tag-active' : 'tag'}">${p.project_status}</span></td>
             <td>${p.completed_tasks}/${p.total_tasks}</td>
             <td>
               <div class="progress-bar-bg">
@@ -1160,9 +1192,50 @@
             </td>
           </tr>
         `).join('');
+
+        renderProjectsPagination(pagination);
       } catch (err) {
         console.error('Error en projects:', err);
       }
+    }
+
+    function renderProjectsPagination(pagination) {
+      const bar = document.getElementById('projects-pagination-bar');
+      const info = document.getElementById('projects-pagination-info');
+      const controls = document.getElementById('projects-pagination-controls');
+      
+      bar.style.display = 'flex';
+      const page = pagination.page || 1;
+      const totalPages = pagination.total_pages || 1;
+      const totalItems = pagination.total || 0;
+
+      info.textContent = `Página ${page} de ${totalPages} (${totalItems} proyectos)`;
+
+      let html = '';
+      html += `<button class="page-btn" onclick="loadProjects(${page - 1})" ${page <= 1 ? 'disabled' : ''}>◀</button>`;
+
+      let startPage = Math.max(1, page - 2);
+      let endPage = Math.min(totalPages, startPage + 4);
+      if (endPage - startPage < 4) {
+        startPage = Math.max(1, endPage - 4);
+      }
+
+      if (startPage > 1) {
+        html += `<button class="page-btn" onclick="loadProjects(1)">1</button>`;
+        if (startPage > 2) html += `<span style="color:var(--text-dim); padding:0 2px;">...</span>`;
+      }
+
+      for (let p = startPage; p <= endPage; p++) {
+        html += `<button class="page-btn ${p === page ? 'active' : ''}" onclick="loadProjects(${p})">${p}</button>`;
+      }
+
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) html += `<span style="color:var(--text-dim); padding:0 2px;">...</span>`;
+        html += `<button class="page-btn" onclick="loadProjects(${totalPages})">${totalPages}</button>`;
+      }
+
+      html += `<button class="page-btn" onclick="loadProjects(${page + 1})" ${page >= totalPages ? 'disabled' : ''}>▶</button>`;
+      controls.innerHTML = html;
     }
 
     // 4. Cargar Tareas Paginadas Numeradas (/api/tasks-paginated)
