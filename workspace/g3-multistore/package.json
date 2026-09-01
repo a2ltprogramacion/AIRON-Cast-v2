@@ -1,0 +1,21 @@
+{
+  "name": "g3-multistore",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Landing page de catálogo comercial para G3 Multistore",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "astro": "^5.18.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.7.2"
+  }
+}

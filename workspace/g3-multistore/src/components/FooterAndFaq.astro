@@ -1,0 +1,189 @@
+---
+import content from '../data/content.json';
+---
+<section class="trust-faq-section">
+  <div class="container">
+    <!-- BLOQUE DE VALOR / CONFIANZA -->
+    <div class="trust-grid">
+      {content.trust.items.map(item => (
+        <div class="trust-card">
+          <div class="trust-icon">✨</div>
+          <h3 class="trust-title">{item.title}</h3>
+          <p class="trust-desc">{item.description}</p>
+        </div>
+      ))}
+    </div>
+
+    <!-- UBICACIÓN & CONTACTO -->
+    <div class="location-banner">
+      <div class="location-info">
+        <span class="location-badge">📍 Tienda Física</span>
+        <h3 class="location-title">Visítanos en San Diego, Carabobo</h3>
+        <p class="location-address">
+          <strong>C.C. San Diego / Fin De Siglo - Gran Bazar</strong>, Local M9-5, Municipio San Diego, Edo. Carabobo.
+        </p>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 8px;">
+          📞 Teléfono / WhatsApp: <strong>0412-1869211</strong> | 📱 Instagram: <strong>@g3multistore</strong>
+        </p>
+      </div>
+      <div class="location-action">
+        <a href="https://wa.me/584121869211?text=Hola%20G3%20Multistore%20👋%2C%20quisiera%20solicitar%20la%20ubicaci%C3%B3n%20exacta%20y%20horarios." target="_blank" class="btn btn-whatsapp" style="padding: 14px 24px; font-size: 1rem;">
+          📍 Solicitar Ubicación GPS
+        </a>
+      </div>
+    </div>
+
+    <!-- PREGUNTAS FRECUENTES -->
+    <div class="faq-container">
+      <h3 class="faq-header-title">Preguntas Frecuentes</h3>
+      <div class="faq-list">
+        {content.faqs.map(faq => (
+          <details class="faq-item">
+            <summary class="faq-q">{faq.q}</summary>
+            <p class="faq-a">{faq.a}</p>
+          </details>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container footer-content">
+    <div class="footer-brand">
+      <span class="logo-badge" style="display:inline-block; margin-bottom:8px;">G3</span>
+      <p style="color: var(--text-muted); font-size: 0.85rem; max-width: 320px;">
+        G3 Multistore — Tu aliado comercial en equipamiento industrial, bombeo, energía solar y gastronomía en Venezuela.
+      </p>
+    </div>
+    <div class="footer-links">
+      <span style="font-weight: 700; font-size: 0.9rem; display:block; margin-bottom:8px;">Contacto Rápido</span>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px;">📞 WhatsApp: 0412-1869211</p>
+      <p style="font-size: 0.85rem; color: var(--text-muted);">📱 Instagram: @g3multistore</p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="container">
+      <p style="font-size: 0.78rem; color: var(--text-muted); text-align: center;">
+        © 2026 G3 Multistore. Todos los derechos reservados. Desarrollado con tecnología AIRON-Cast.
+      </p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .trust-faq-section {
+    padding: 40px 0 60px;
+    background: var(--surface-alt);
+    border-top: 1px solid var(--border);
+  }
+  .trust-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+  }
+  .trust-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .trust-icon {
+    font-size: 1.5rem;
+    margin-bottom: 12px;
+  }
+  .trust-title {
+    font-size: 1.05rem;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .trust-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .location-banner {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 50px;
+    flex-wrap: wrap;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+  }
+  .location-badge {
+    display: inline-block;
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 9999px;
+    margin-bottom: 8px;
+  }
+  .location-title {
+    font-size: 1.4rem;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .location-address {
+    font-size: 0.95rem;
+    color: var(--text);
+  }
+
+  .faq-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .faq-header-title {
+    font-size: 1.6rem;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .faq-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    cursor: pointer;
+  }
+  .faq-q {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text);
+  }
+  .faq-a {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+
+  .footer {
+    background: #FFFFFF;
+    border-top: 1px solid var(--border);
+    padding-top: 40px;
+  }
+  .footer-content {
+    display: flex;
+    justify-content: space-between;
+    gap: 30px;
+    padding-bottom: 30px;
+    flex-wrap: wrap;
+  }
+  .footer-bottom {
+    border-top: 1px solid var(--border);
+    padding: 16px 0;
+  }
+</style>

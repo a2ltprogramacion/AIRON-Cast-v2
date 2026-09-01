@@ -1,0 +1,104 @@
+---
+import content from '../data/content.json';
+---
+<section class="hero-section">
+  <div class="container hero-container">
+    <div class="hero-badge">{content.hero.badge}</div>
+    <h1 class="hero-title">{content.hero.title}</h1>
+    <p class="hero-subtitle">{content.hero.subtitle}</p>
+
+    <div class="hero-actions">
+      <a href="#catalogo" class="btn btn-primary" style="padding: 12px 24px; font-size: 1rem;">
+        🔍 {content.hero.ctaPrimary}
+      </a>
+      <a href="https://wa.me/584121869211?text=Hola%20G3%20Multistore%20👋%2C%20quisiera%20asesor%C3%ADa%20inmediata." target="_blank" class="btn btn-whatsapp" style="padding: 12px 24px; font-size: 1rem;">
+        💬 {content.hero.ctaSecondary}
+      </a>
+    </div>
+
+    <div class="hero-stats-grid">
+      {content.hero.stats.map(s => (
+        <div class="stat-box">
+          <div class="stat-num">{s.value}</div>
+          <div class="stat-lbl">{s.label}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero-section {
+    background: linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 60px 0 40px;
+    text-align: center;
+  }
+  .hero-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 900px;
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(37, 99, 235, 0.08);
+    color: var(--primary);
+    border: 1px solid rgba(37, 99, 235, 0.2);
+    padding: 6px 14px;
+    border-radius: 9999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+  }
+  .hero-title {
+    font-size: 2.75rem;
+    line-height: 1.15;
+    color: var(--text);
+    margin-bottom: 16px;
+    letter-spacing: -0.03em;
+  }
+  .hero-subtitle {
+    font-size: 1.15rem;
+    color: var(--text-muted);
+    margin-bottom: 30px;
+    max-width: 720px;
+    line-height: 1.6;
+  }
+  .hero-actions {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .hero-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    width: 100%;
+    max-width: 800px;
+    border-top: 1px solid var(--border);
+    padding-top: 30px;
+  }
+  .stat-box {
+    text-align: center;
+  }
+  .stat-num {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--primary);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .stat-lbl {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  @media (max-width: 768px) {
+    .hero-title { font-size: 2rem; }
+    .hero-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>

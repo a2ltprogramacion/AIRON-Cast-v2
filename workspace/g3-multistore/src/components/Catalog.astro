@@ -1,0 +1,341 @@
+---
+import products from '../data/products.json';
+
+// Extraer categorías únicas
+const categories = Array.from(new Set(products.map(p => p.category)));
+
+// Función para obtener icono por categoría
+function getCategoryIcon(cat: string) {
+  if (cat.includes('Ventilador')) return '💨';
+  if (cat.includes('pozo') || cat.includes('Lápiz') || cat.includes('periférica') || cat.includes('centrífuga')) return '💦';
+  if (cat.includes('solar') || cat.includes('Paneles') || cat.includes('Lámpara solar')) return '☀️';
+  if (cat.includes('piscina') || cat.includes('Filtro')) return '🏊‍♂️';
+  if (cat.includes('Hidrojet')) return '🚿';
+  if (cat.includes('fuera de borda')) return '🚤';
+  if (cat.includes('Compresor')) return '🗜️';
+  if (cat.includes('soldar')) return '⚡';
+  if (cat.includes('Gato') || cat.includes('Graser') || cat.includes('dado') || cat.includes('Transpaleta')) return '🔧';
+  if (cat.includes('Jardinería') || cat.includes('Fumigación')) return '🌿';
+  if (cat.includes('portón')) return '🚪';
+  if (cat.includes('Generador') || cat.includes('Planta')) return '🔌';
+  if (cat.includes('Balanza') || cat.includes('Romana')) return '⚖️';
+  if (cat.includes('Contadora') || cat.includes('Detectora')) return '💵';
+  if (cat.includes('Cocina') || cat.includes('Molino') || cat.includes('Licuadora') || cat.includes('alimento') || cat.includes('helado') || cat.includes('hielo')) return '🍽️';
+  if (cat.includes('odontológico')) return '🦷';
+  return '📦';
+}
+---
+
+<section class="catalog-section" id="catalogo">
+  <div class="container">
+    <div class="catalog-header">
+      <div>
+        <h2 class="section-title">Catálogo Completo de Equipos</h2>
+        <p class="section-subtitle">Explora más de 190 productos industriales, solares y comerciales con stock en tienda.</p>
+      </div>
+
+      <!-- BUSCADOR -->
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="catalog-search" placeholder="Buscar por nombre, SKU o modelo..." onkeyup="filterCatalog()" />
+      </div>
+    </div>
+
+    <!-- SELECTOR DE CATEGORÍAS -->
+    <div class="categories-wrapper">
+      <button class="cat-pill active" onclick="selectCategory('all', this)">
+        <span>✨</span> <span>Todas ({products.length})</span>
+      </button>
+      {categories.map(cat => {
+        const count = products.filter(p => p.category === cat).length;
+        const icon = getCategoryIcon(cat);
+        return (
+          <button class="cat-pill" onclick={`selectCategory('${cat}', this)`}>
+            <span>{icon}</span> <span>{cat} ({count})</span>
+          </button>
+        );
+      })}
+    </div>
+
+    <!-- GRID DE PRODUCTOS -->
+    <div class="products-grid" id="products-grid">
+      {products.map(p => {
+        const whatsappMsg = encodeURIComponent(
+          `Hola G3 Multistore 👋, me interesa consultar el producto: *${p.title}* (SKU: ${p.sku}) por un monto de $${p.price_usd} (Divisas) / $${p.price_bcv} (BCV).`
+        );
+        return (
+          <div 
+            class="product-card" 
+            data-category={p.category}
+            data-title={p.title.toLowerCase()}
+            data-sku={p.sku.toLowerCase()}
+            data-stock={p.in_stock ? "true" : "false"}
+          >
+            <div class="product-top">
+              <span class="sku-badge">{p.sku}</span>
+              {p.in_stock ? (
+                <span class="stock-badge in-stock">🟢 Disponible</span>
+              ) : (
+                <span class="stock-badge out-stock">❌ AGOTADO</span>
+              )}
+            </div>
+
+            <div class="product-body">
+              <span class="category-tag">{p.subcategory || p.category}</span>
+              <h3 class="product-title">{p.title}</h3>
+              {p.specs && <p class="product-specs">{p.specs}</p>}
+            </div>
+
+            <div class="product-footer">
+              <div class="prices-container">
+                <div class="price-usd-display">
+                  <span class="price-val">${p.price_usd}</span>
+                  <span class="price-lbl">Divisas ($)</span>
+                </div>
+                <div class="price-bcv-display" style="display: none;">
+                  <span class="price-val" style="color: var(--bcv);">${p.price_bcv}</span>
+                  <span class="price-lbl">Tasa BCV</span>
+                </div>
+              </div>
+
+              <a 
+                href={`https://wa.me/584121869211?text=${whatsappMsg}`} 
+                target="_blank" 
+                class={`btn ${p.in_stock ? 'btn-whatsapp' : 'btn-outline'}`}
+                style="padding: 8px 14px; font-size: 0.85rem;"
+              >
+                {p.in_stock ? '💬 Cotizar' : '⏳ Consultar Llegada'}
+              </a>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+    
+    <div id="no-results" style="display:none; text-align:center; padding: 40px; color: var(--text-muted);">
+      No se encontraron productos que coincidan con la búsqueda.
+    </div>
+  </div>
+</section>
+
+<style>
+  .catalog-section {
+    padding: 60px 0;
+  }
+  .catalog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 20px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .section-title {
+    font-size: 1.85rem;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .section-subtitle {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+  }
+
+  .search-box {
+    position: relative;
+    width: 100%;
+    max-width: 340px;
+  }
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.9rem;
+  }
+  .search-box input {
+    width: 100%;
+    padding: 10px 14px 10px 38px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.9rem;
+    outline: none;
+    transition: all 0.2s ease;
+  }
+  .search-box input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-glow);
+  }
+
+  /* CATEGORÍAS EN HORIZONTAL */
+  .categories-wrapper {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 12px;
+    margin-bottom: 30px;
+    scrollbar-width: thin;
+  }
+  .cat-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 9999px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+  }
+  .cat-pill:hover {
+    border-color: #cbd5e1;
+    background: var(--surface-alt);
+  }
+  .cat-pill.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+  }
+
+  /* GRID DE TARJETAS */
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .product-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 14px;
+    transition: all 0.2s ease;
+  }
+  .product-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+    transform: translateY(-2px);
+  }
+  .product-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .sku-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 600;
+    background: var(--surface-alt);
+    color: var(--text-muted);
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+  .stock-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 9999px;
+  }
+  .stock-badge.in-stock {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+  }
+  .stock-badge.out-stock {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+  }
+
+  .product-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .category-tag {
+    font-size: 0.72rem;
+    color: var(--primary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .product-title {
+    font-size: 1.05rem;
+    color: var(--text);
+    line-height: 1.35;
+  }
+  .product-specs {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.45;
+  }
+
+  .product-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+    gap: 10px;
+  }
+  .prices-container {
+    display: flex;
+    flex-direction: column;
+  }
+  .price-val {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .price-lbl {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+</style>
+
+<script is:inline>
+  let activeCat = 'all';
+
+  function selectCategory(cat, btn) {
+    activeCat = cat;
+    document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filterCatalog();
+  }
+
+  function filterCatalog() {
+    const q = document.getElementById('catalog-search')?.value.toLowerCase().trim() || '';
+    const cards = document.querySelectorAll('.product-card');
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+      const cardCat = card.getAttribute('data-category');
+      const title = card.getAttribute('data-title');
+      const sku = card.getAttribute('data-sku');
+
+      const matchesCat = (activeCat === 'all' || cardCat === activeCat);
+      const matchesSearch = !q || title.includes(q) || sku.includes(q);
+
+      if (matchesCat && matchesSearch) {
+        card.style.display = 'flex';
+        visibleCount++;
+      } else {
+        card.style.display = 'none';
+      }
+    });
+
+    const noRes = document.getElementById('no-results');
+    if (noRes) {
+      noRes.style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+  }
+</script>

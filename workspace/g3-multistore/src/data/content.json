@@ -1,0 +1,71 @@
+{
+  "site": {
+    "title": "G3 Multistore | Equipos Industriales, Comerciales y Energía Solar en Venezuela",
+    "description": "Distribuidor líder de Paneles Solares, Bombas de Agua, Plantas Eléctricas, Herramientas, Maquinaria Gastronómica y Balanzas. Tienda física en C.C. San Diego Gran Bazar y Envíos Nacionales.",
+    "ogImage": "/og-image.jpg",
+    "url": "https://g3multistore.com",
+    "whatsappPhone": "584121869211",
+    "instagram": "@g3multistore",
+    "address": "C.C. San Diego / Fin De Siglo - Gran Bazar, Local M9-5, Municipio San Diego, Carabobo"
+  },
+  "hero": {
+    "badge": "⚡ Distribuidor Mayorista & Detal · San Diego, Carabobo",
+    "title": "Equipos Industriales, Energía Solar y Maquinaria Comercial",
+    "subtitle": "Más de 190 productos de alta gama con garantía directa, precios transparentes en Divisas y tasa oficial BCV, y despacho inmediato a toda Venezuela.",
+    "ctaPrimary": "Explorar Catálogo 2026",
+    "ctaSecondary": "Consultar por WhatsApp",
+    "stats": [
+      { "value": "+190", "label": "Productos en Catálogo" },
+      { "value": "100%", "label": "Tasa Oficial BCV" },
+      { "value": "Nacional", "label": "Envíos a Todo el País" },
+      { "value": "Física", "label": "Tienda en C.C. San Diego" }
+    ]
+  },
+  "trust": {
+    "title": "¿Por qué elegir a G3 Multistore?",
+    "items": [
+      {
+        "icon": "ShieldCheck",
+        "title": "Garantía & Respaldo Directo",
+        "description": "Equipos 100% probados con bobinados de cobre y componentes de grado industrial."
+      },
+      {
+        "icon": "CurrencyDollar",
+        "title": "Precios Transparentes",
+        "description": "Paga en Divisas o en Bolívares a la tasa oficial del BCV sin recargos ocultos."
+      },
+      {
+        "icon": "Truck",
+        "title": "Envíos Rápidos y Seguros",
+        "description": "Despachos diarios por MRW, Tealca, Zoom y flete directo para maquinaria pesada."
+      },
+      {
+        "icon": "Store",
+        "title": "Atención Personalizada en Tienda",
+        "description": "Visítanos en Gran Bazar San Diego o recibe asesoría técnica inmediata vía WhatsApp."
+      }
+    ]
+  },
+  "whatsappTemplates": {
+    "general": "Hola G3 Multistore 👋, estoy interesado en recibir información y asesoría sobre sus productos.",
+    "product": "Hola G3 Multistore 👋, me interesa consultar disponibilidad y comprar el producto: *{title}* (SKU: {sku}) por un monto de ${price_usd} (Divisas) / ${price_bcv} (BCV)."
+  },
+  "faqs": [
+    {
+      "q": "¿Dónde están ubicados?",
+      "a": "Estamos en el C.C. San Diego / Fin De Siglo - Gran Bazar, Local M9-5, Municipio San Diego, Estado Carabobo. ¡Puedes visitarnos y ver los equipos en persona!"
+    },
+    {
+      "q": "¿Cuáles son las formas de pago?",
+      "a": "Aceptamos efectivo Divisas (USD/EUR), Zelle, Pago Móvil y Transferencias bancarias a tasa oficial BCV del día."
+    },
+    {
+      "q": "¿Hacen envíos al resto del país?",
+      "a": "Sí, realizamos envíos nacionales diarios con cobro a destino a través de MRW, Zoom, Tealca y transportes de carga pesada."
+    },
+    {
+      "q": "¿Qué pasa si un producto aparece como 'AGOTADO'?",
+      "a": "Puedes escribirnos directamente al WhatsApp. Gestionamos despachos constantes y podemos apartar tu equipo en el próximo contenedor."
+    }
+  ]
+}

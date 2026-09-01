@@ -1,0 +1,17 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Hero from '../components/Hero.astro';
+import Catalog from '../components/Catalog.astro';
+import FooterAndFaq from '../components/FooterAndFaq.astro';
+import content from '../data/content.json';
+---
+
+<Layout title={content.site.title} description={content.site.description}>
+  <Navbar />
+  <main>
+    <Hero />
+    <Catalog />
+    <FooterAndFaq />
+  </main>
+</Layout>
