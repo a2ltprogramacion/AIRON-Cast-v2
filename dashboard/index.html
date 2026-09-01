@@ -603,15 +603,22 @@
       gap: 8px;
     }
     .handoff-flow {
-      font-size: 0.73rem;
+      font-size: 0.74rem;
       color: var(--text-muted);
       display: flex;
-      align-items: center;
-      gap: 4px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      max-width: 100%;
+      flex-direction: column;
+      gap: 3px;
+      line-height: 1.4;
+      background: rgba(15, 23, 42, 0.4);
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .handoff-row {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      word-break: break-word;
     }
 
     /* PROGRESS BAR */
@@ -639,6 +646,95 @@
       border-radius: 6px;
       font-size: 0.8rem;
       font-family: inherit;
+    }
+
+    /* QUICK START GUIDE */
+    .quick-guide-panel {
+      background: var(--card-bg);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .guide-steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+    }
+    .guide-step-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+    .guide-step-card:hover {
+      border-color: var(--card-border-glow);
+      background: rgba(24, 34, 56, 0.7);
+    }
+    .step-number {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+    .step-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .step-desc {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+    .code-snippet {
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      overflow-x: auto;
+    }
+    .code-snippet code {
+      white-space: nowrap;
+    }
+    .copy-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 0.75rem;
+      padding: 2px 4px;
+      border-radius: 4px;
+      transition: color 0.2s ease;
+    }
+    .copy-btn:hover {
+      color: #fff;
     }
   </style>
 </head>
@@ -816,6 +912,78 @@
       Cargando matriz de agentes...
     </div>
   </section>
+
+  <!-- 5. GUÍA RÁPIDA: CÓMO INICIAR UN PROYECTO -->
+  <div class="section-title">
+    <span>🚀 Guía Rápida — Cómo Iniciar y Operar un Proyecto</span>
+    <span class="id-badge">Operación Determinista</span>
+  </div>
+
+  <div class="quick-guide-panel">
+    <div class="guide-steps-grid">
+      <!-- PASO 1 -->
+      <div class="guide-step-card">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="step-number">1</div>
+          <div class="step-title">Crear Workspace & Backlog</div>
+        </div>
+        <p class="step-desc">
+          Crea la carpeta <code>workspace/&lt;slug&gt;/</code> y añade el archivo <code>BACKLOG.md</code> con las tareas ordenadas por prioridad (título, agente asignado y dependencias).
+        </p>
+        <div class="code-snippet">
+          <code>mkdir workspace/mi-landing</code>
+        </div>
+      </div>
+
+      <!-- PASO 2 -->
+      <div class="guide-step-card">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="step-number">2</div>
+          <div class="step-title">Registrar en DB (Bootstrap)</div>
+        </div>
+        <p class="step-desc">
+          Registra el proyecto y parsea las tareas en la base de datos SQLite con el comando de bootstrap:
+        </p>
+        <div class="code-snippet">
+          <code>python tools/airon_executor.py bootstrap mi-landing</code>
+        </div>
+      </div>
+
+      <!-- PASO 3 -->
+      <div class="guide-step-card">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="step-number">3</div>
+          <div class="step-title">Despachar Turno Round-Robin</div>
+        </div>
+        <p class="step-desc">
+          Obtén la siguiente tarea en cola lista para ser ejecutada por su agente respectivo:
+        </p>
+        <div class="code-snippet">
+          <code>python tools/airon_executor.py dispatch mi-landing</code>
+        </div>
+      </div>
+
+      <!-- PASO 4 -->
+      <div class="guide-step-card">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="step-number">4</div>
+          <div class="step-title">Completar & Avanzar</div>
+        </div>
+        <p class="step-desc">
+          Una vez generado el código/artefacto, marca la tarea como completada para desbloquear la siguiente:
+        </p>
+        <div class="code-snippet">
+          <code>python tools/airon_executor.py complete mi-landing &lt;task_id&gt;</code>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTA DE LENGUAJE NATURAL -->
+    <div style="background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.25); border-radius:8px; padding:10px 14px; font-size:0.8rem; color:#cbd5e1; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+      <span style="font-size:1.1rem;">💡</span>
+      <span><strong>Modo Lenguaje Natural:</strong> También puedes ejecutar <code>python tools/airon_nl.py "estado"</code> o <code>python tools/airon_nl.py "siguiente turno de mi-landing"</code>.</span>
+    </div>
+  </div>
 
   <script>
     let currentTimelinePage = 1;
@@ -1242,8 +1410,15 @@
             </div>
 
             <!-- CADENA DE MANDO (HANDOFF) -->
-            <div class="handoff-flow" title="${a.upstream || 'Operador'} ➔ ${a.downstream || 'Operador'}">
-              ${up} <span style="color:var(--text-dim);">➔</span> ${down}
+            <div class="handoff-flow">
+              <div class="handoff-row">
+                <strong style="color:var(--text-dim); min-width:65px; font-size:0.68rem; text-transform:uppercase;">⬆ Recibe de:</strong>
+                <span style="color:#a5b4fc; font-weight:600;">${a.upstream || 'Operador / Entrada Directa'}</span>
+              </div>
+              <div class="handoff-row">
+                <strong style="color:var(--text-dim); min-width:65px; font-size:0.68rem; text-transform:uppercase;">⬇ Entrega a:</strong>
+                <span style="color:#6ee7b7; font-weight:600;">${a.downstream || 'Operador / Cierre'}</span>
+              </div>
             </div>
 
             <!-- FOOTER CON MÉTRICAS Y ÚLTIMO USO -->
