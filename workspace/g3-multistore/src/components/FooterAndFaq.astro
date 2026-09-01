@@ -1,13 +1,20 @@
 ---
 import content from '../data/content.json';
+
+const trustIcons = [
+  'bi-shield-check',
+  'bi-currency-dollar',
+  'bi-truck',
+  'bi-shop'
+];
 ---
 <section class="trust-faq-section">
   <div class="container">
     <!-- BLOQUE DE VALOR / CONFIANZA -->
     <div class="trust-grid">
-      {content.trust.items.map(item => (
+      {content.trust.items.map((item, idx) => (
         <div class="trust-card">
-          <div class="trust-icon">✨</div>
+          <div class="trust-icon"><i class={`bi ${trustIcons[idx] || 'bi-check2-circle'}`}></i></div>
           <h3 class="trust-title">{item.title}</h3>
           <p class="trust-desc">{item.description}</p>
         </div>
@@ -17,25 +24,25 @@ import content from '../data/content.json';
     <!-- UBICACIÓN & CONTACTO -->
     <div class="location-banner">
       <div class="location-info">
-        <span class="location-badge">📍 Tienda Física</span>
+        <span class="location-badge"><i class="bi bi-geo-alt-fill"></i> Tienda Física</span>
         <h3 class="location-title">Visítanos en San Diego, Carabobo</h3>
         <p class="location-address">
           <strong>C.C. San Diego / Fin De Siglo - Gran Bazar</strong>, Local M9-5, Municipio San Diego, Edo. Carabobo.
         </p>
         <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 8px;">
-          📞 Teléfono / WhatsApp: <strong>0412-1869211</strong> | 📱 Instagram: <strong>@g3multistore</strong>
+          <i class="bi bi-telephone-fill" style="color:var(--primary);"></i> Teléfono / WhatsApp: <strong>0412-1869211</strong> &nbsp;|&nbsp; <i class="bi bi-instagram" style="color:#E1306C;"></i> Instagram: <strong>@g3multistore</strong>
         </p>
       </div>
       <div class="location-action">
         <a href="https://wa.me/584121869211?text=Hola%20G3%20Multistore%20👋%2C%20quisiera%20solicitar%20la%20ubicaci%C3%B3n%20exacta%20y%20horarios." target="_blank" class="btn btn-whatsapp" style="padding: 14px 24px; font-size: 1rem;">
-          📍 Solicitar Ubicación GPS
+          <i class="bi bi-geo-alt"></i> Solicitar Ubicación GPS
         </a>
       </div>
     </div>
 
     <!-- PREGUNTAS FRECUENTES -->
     <div class="faq-container">
-      <h3 class="faq-header-title">Preguntas Frecuentes</h3>
+      <h3 class="faq-header-title"><i class="bi bi-patch-question"></i> Preguntas Frecuentes</h3>
       <div class="faq-list">
         {content.faqs.map(faq => (
           <details class="faq-item">
@@ -51,15 +58,19 @@ import content from '../data/content.json';
 <footer class="footer">
   <div class="container footer-content">
     <div class="footer-brand">
-      <span class="logo-badge" style="display:inline-block; margin-bottom:8px;">G3</span>
+      <img src="/images/logo.webp" alt="G3 Multistore" style="height: 44px; width: auto; object-fit: contain; margin-bottom: 12px;" />
       <p style="color: var(--text-muted); font-size: 0.85rem; max-width: 320px;">
         G3 Multistore — Tu aliado comercial en equipamiento industrial, bombeo, energía solar y gastronomía en Venezuela.
       </p>
     </div>
     <div class="footer-links">
       <span style="font-weight: 700; font-size: 0.9rem; display:block; margin-bottom:8px;">Contacto Rápido</span>
-      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px;">📞 WhatsApp: 0412-1869211</p>
-      <p style="font-size: 0.85rem; color: var(--text-muted);">📱 Instagram: @g3multistore</p>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px;">
+        <i class="bi bi-whatsapp" style="color:var(--whatsapp);"></i> WhatsApp: <strong>0412-1869211</strong>
+      </p>
+      <p style="font-size: 0.85rem; color: var(--text-muted);">
+        <i class="bi bi-instagram" style="color:#E1306C;"></i> Instagram: <strong>@g3multistore</strong>
+      </p>
     </div>
   </div>
   <div class="footer-bottom">

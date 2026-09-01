@@ -2,30 +2,26 @@
 ---
 <header class="navbar">
   <div class="container nav-content">
-    <div class="brand">
-      <span class="logo-badge">G3</span>
-      <div class="brand-text">
-        <span class="brand-name">MULTISTORE</span>
-        <span class="brand-tag">San Diego · Carabobo</span>
-      </div>
-    </div>
+    <a href="/" class="brand">
+      <img src="/images/logo.webp" alt="G3 Multistore" class="brand-logo-img" />
+    </a>
 
     <!-- SWITCHER DE MONEDA -->
     <div class="currency-box">
-      <span class="currency-label">Ver Precios:</span>
+      <span class="currency-label"><i class="bi bi-coin"></i> Ver Precios:</span>
       <div class="currency-toggle">
         <button id="btn-curr-usd" class="curr-btn active" onclick="setCurrency('usd')">
-          💵 Divisas ($)
+          <i class="bi bi-cash-stack"></i> Divisas ($)
         </button>
         <button id="btn-curr-bcv" class="curr-btn" onclick="setCurrency('bcv')">
-          🏛️ Tasa BCV
+          <i class="bi bi-bank"></i> Tasa BCV
         </button>
       </div>
     </div>
 
     <div class="nav-actions">
       <a href="https://wa.me/584121869211?text=Hola%20G3%20Multistore%20👋%2C%20quisiera%20solicitar%20asesor%C3%ADa%20y%20precios." target="_blank" class="btn btn-whatsapp">
-        <span>💬</span> <span>WhatsApp</span>
+        <i class="bi bi-whatsapp"></i> <span>WhatsApp</span>
       </a>
     </div>
   </div>
@@ -36,10 +32,10 @@
     position: sticky;
     top: 0;
     z-index: 100;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
-    padding: 12px 0;
+    padding: 10px 0;
   }
   .nav-content {
     display: flex;
@@ -51,32 +47,16 @@
   .brand {
     display: flex;
     align-items: center;
-    gap: 10px;
     text-decoration: none;
   }
-  .logo-badge {
-    background: var(--primary);
-    color: white;
-    font-weight: 800;
-    font-size: 1.25rem;
-    padding: 6px 12px;
-    border-radius: 8px;
-    letter-spacing: -0.05em;
+  .brand-logo-img {
+    height: 48px;
+    width: auto;
+    object-fit: contain;
+    transition: transform 0.2s ease;
   }
-  .brand-text {
-    display: flex;
-    flex-direction: column;
-  }
-  .brand-name {
-    font-size: 1.15rem;
-    font-weight: 800;
-    letter-spacing: 0.05em;
-    color: var(--text);
-  }
-  .brand-tag {
-    font-size: 0.72rem;
-    color: var(--text-muted);
-    font-weight: 500;
+  .brand-logo-img:hover {
+    transform: scale(1.03);
   }
 
   .currency-box {

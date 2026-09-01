@@ -4,25 +4,25 @@ import products from '../data/products.json';
 // Extraer categorías únicas
 const categories = Array.from(new Set(products.map(p => p.category)));
 
-// Función para obtener icono por categoría
+// Función para obtener icono por categoría de Bootstrap Icons
 function getCategoryIcon(cat: string) {
-  if (cat.includes('Ventilador')) return '💨';
-  if (cat.includes('pozo') || cat.includes('Lápiz') || cat.includes('periférica') || cat.includes('centrífuga')) return '💦';
-  if (cat.includes('solar') || cat.includes('Paneles') || cat.includes('Lámpara solar')) return '☀️';
-  if (cat.includes('piscina') || cat.includes('Filtro')) return '🏊‍♂️';
-  if (cat.includes('Hidrojet')) return '🚿';
-  if (cat.includes('fuera de borda')) return '🚤';
-  if (cat.includes('Compresor')) return '🗜️';
-  if (cat.includes('soldar')) return '⚡';
-  if (cat.includes('Gato') || cat.includes('Graser') || cat.includes('dado') || cat.includes('Transpaleta')) return '🔧';
-  if (cat.includes('Jardinería') || cat.includes('Fumigación')) return '🌿';
-  if (cat.includes('portón')) return '🚪';
-  if (cat.includes('Generador') || cat.includes('Planta')) return '🔌';
-  if (cat.includes('Balanza') || cat.includes('Romana')) return '⚖️';
-  if (cat.includes('Contadora') || cat.includes('Detectora')) return '💵';
-  if (cat.includes('Cocina') || cat.includes('Molino') || cat.includes('Licuadora') || cat.includes('alimento') || cat.includes('helado') || cat.includes('hielo')) return '🍽️';
-  if (cat.includes('odontológico')) return '🦷';
-  return '📦';
+  if (cat.includes('Ventilador')) return 'bi-wind';
+  if (cat.includes('pozo') || cat.includes('Lápiz') || cat.includes('periférica') || cat.includes('centrífuga')) return 'bi-droplet-half';
+  if (cat.includes('solar') || cat.includes('Paneles') || cat.includes('Lámpara solar')) return 'bi-sun-fill';
+  if (cat.includes('piscina') || cat.includes('Filtro')) return 'bi-water';
+  if (cat.includes('Hidrojet')) return 'bi-speedometer2';
+  if (cat.includes('fuera de borda')) return 'bi-tsunami';
+  if (cat.includes('Compresor')) return 'bi-gear-wide-connected';
+  if (cat.includes('soldar')) return 'bi-lightning-charge-fill';
+  if (cat.includes('Gato') || cat.includes('Graser') || cat.includes('dado') || cat.includes('Transpaleta')) return 'bi-tools';
+  if (cat.includes('Jardinería') || cat.includes('Fumigación')) return 'bi-tree-fill';
+  if (cat.includes('portón')) return 'bi-door-open-fill';
+  if (cat.includes('Generador') || cat.includes('Planta')) return 'bi-plug-fill';
+  if (cat.includes('Balanza') || cat.includes('Romana')) return 'bi-reception-4';
+  if (cat.includes('Contadora') || cat.includes('Detectora')) return 'bi-cash-coin';
+  if (cat.includes('Cocina') || cat.includes('Molino') || cat.includes('Licuadora') || cat.includes('alimento') || cat.includes('helado') || cat.includes('hielo')) return 'bi-cup-hot-fill';
+  if (cat.includes('odontológico')) return 'bi-heart-pulse-fill';
+  return 'bi-box-seam-fill';
 }
 ---
 
@@ -36,7 +36,7 @@ function getCategoryIcon(cat: string) {
 
       <!-- BUSCADOR -->
       <div class="search-box">
-        <span class="search-icon">🔍</span>
+        <i class="bi bi-search search-icon"></i>
         <input type="text" id="catalog-search" placeholder="Buscar por nombre, SKU o modelo..." onkeyup="filterCatalog()" />
       </div>
     </div>
@@ -44,14 +44,14 @@ function getCategoryIcon(cat: string) {
     <!-- SELECTOR DE CATEGORÍAS -->
     <div class="categories-wrapper">
       <button class="cat-pill active" onclick="selectCategory('all', this)">
-        <span>✨</span> <span>Todas ({products.length})</span>
+        <i class="bi bi-grid-fill"></i> <span>Todas ({products.length})</span>
       </button>
       {categories.map(cat => {
         const count = products.filter(p => p.category === cat).length;
-        const icon = getCategoryIcon(cat);
+        const iconClass = getCategoryIcon(cat);
         return (
           <button class="cat-pill" onclick={`selectCategory('${cat}', this)`}>
-            <span>{icon}</span> <span>{cat} ({count})</span>
+            <i class={`bi ${iconClass}`}></i> <span>{cat} ({count})</span>
           </button>
         );
       })}
@@ -74,9 +74,9 @@ function getCategoryIcon(cat: string) {
             <div class="product-top">
               <span class="sku-badge">{p.sku}</span>
               {p.in_stock ? (
-                <span class="stock-badge in-stock">🟢 Disponible</span>
+                <span class="stock-badge in-stock"><i class="bi bi-check-circle-fill"></i> Disponible</span>
               ) : (
-                <span class="stock-badge out-stock">❌ AGOTADO</span>
+                <span class="stock-badge out-stock"><i class="bi bi-exclamation-triangle-fill"></i> AGOTADO</span>
               )}
             </div>
 
@@ -104,7 +104,11 @@ function getCategoryIcon(cat: string) {
                 class={`btn ${p.in_stock ? 'btn-whatsapp' : 'btn-outline'}`}
                 style="padding: 8px 14px; font-size: 0.85rem;"
               >
-                {p.in_stock ? '💬 Cotizar' : '⏳ Consultar Llegada'}
+                {p.in_stock ? (
+                  <><i class="bi bi-whatsapp"></i> Cotizar</>
+                ) : (
+                  <><i class="bi bi-clock-history"></i> Consultar Llegada</>
+                )}
               </a>
             </div>
           </div>
