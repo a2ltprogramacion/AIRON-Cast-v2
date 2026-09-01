@@ -1,7 +1,7 @@
 {
   "site": {
-    "title": "G3 Multistore | Equipos Industriales, Comerciales y Energía Solar en Venezuela",
-    "description": "Distribuidor líder de Paneles Solares, Bombas de Agua, Plantas Eléctricas, Herramientas, Maquinaria Gastronómica y Balanzas. Tienda física en C.C. San Diego Gran Bazar y Envíos Nacionales.",
+    "title": "G3 Multistore | Equipamiento para tu Hogar, Negocio e Industria en Venezuela",
+    "description": "Tu tienda multirubro en San Diego, Carabobo. Ventiladores, Bombas de Agua, Energía Solar, Plantas Eléctricas, Herramientas y Equipos Comerciales con garantía y envíos nacionales.",
     "ogImage": "/og-image.jpg",
     "url": "https://g3multistore.com",
     "whatsappPhone": "584121869211",
@@ -9,9 +9,9 @@
     "address": "C.C. San Diego / Fin De Siglo - Gran Bazar, Local M9-5, Municipio San Diego, Carabobo"
   },
   "hero": {
-    "badge": "⚡ Distribuidor Mayorista & Detal · San Diego, Carabobo",
-    "title": "Equipos Industriales, Energía Solar y Maquinaria Comercial",
-    "subtitle": "Más de 190 productos de alta gama con garantía directa, precios transparentes en Divisas y tasa oficial BCV, y despacho inmediato a toda Venezuela.",
+    "badge": "Mayorista y Detal · Soluciones para el Hogar, Comercio e Industria",
+    "title": "Todo para tu Hogar, tu Negocio y tus Proyectos Industriales",
+    "subtitle": "Desde ventiladores recargables y bombas residenciales, hasta energía solar, plantas eléctricas y maquinaria comercial. Precios claros en Divisas y tasa oficial BCV.",
     "ctaPrimary": "Explorar Catálogo 2026",
     "ctaSecondary": "Consultar por WhatsApp",
     "stats": [
