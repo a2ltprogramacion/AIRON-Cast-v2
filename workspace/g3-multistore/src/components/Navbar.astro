@@ -2,8 +2,9 @@
 ---
 <header class="navbar">
   <div class="container nav-content">
-    <a href="/" class="brand">
-      <img src="/images/logo.webp" alt="G3 Multistore" class="brand-logo-img" />
+    <a href="/" class="brand-text">
+      <span class="brand-title">G3 MULTISTORE</span>
+      <span class="brand-dot"></span>
     </a>
 
     <div class="nav-actions">
@@ -34,22 +35,24 @@
     gap: 16px;
     flex-wrap: wrap;
   }
-  .brand {
-    display: flex;
+  .brand-text {
+    display: inline-flex;
     align-items: center;
+    gap: 6px;
     text-decoration: none;
-    padding: 2px 0;
   }
-  .brand-logo-img {
-    height: 68px;
-    max-height: 72px;
-    width: auto;
-    object-fit: contain;
-    transition: transform 0.2s ease;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.06));
+  .brand-title {
+    font-size: 1.2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
   }
-  .brand-logo-img:hover {
-    transform: scale(1.04);
+  .brand-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary);
   }
 
   .nav-actions {

@@ -2,6 +2,11 @@
 import content from '../data/content.json';
 ---
 <section class="hero-section">
+  <!-- MARCA DE AGUA DEL LOGO EN EL FONDO (A 3/4 HACIA LA DERECHA) -->
+  <div class="hero-bg-watermark">
+    <img src="/images/logo.webp" alt="" aria-hidden="true" class="hero-watermark-img" />
+  </div>
+
   <div class="container hero-container">
     <div class="hero-badge"><i class="bi bi-patch-check-fill" style="color: var(--primary);"></i> {content.hero.badge}</div>
     <h1 class="hero-title">{content.hero.title}</h1>
@@ -29,12 +34,36 @@ import content from '../data/content.json';
 
 <style>
   .hero-section {
+    position: relative;
     background: linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 100%);
     border-bottom: 1px solid var(--border);
-    padding: 60px 0 40px;
+    padding: 70px 0 50px;
     text-align: center;
+    overflow: hidden;
   }
+
+  /* MARCA DE AGUA DEL LOGO EN EL FONDO (3/4 HACIA LA DERECHA) */
+  .hero-bg-watermark {
+    position: absolute;
+    top: 50%;
+    left: 78%; /* Posicionado a más de 3/4 hacia la derecha */
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 1;
+    user-select: none;
+  }
+  .hero-watermark-img {
+    width: 540px;
+    max-width: 60vw;
+    height: auto;
+    object-fit: contain;
+    opacity: 0.08; /* Muy sutil, no compite con el texto */
+    filter: grayscale(20%) drop-shadow(0 8px 30px rgba(37, 99, 235, 0.1));
+  }
+
   .hero-container {
+    position: relative;
+    z-index: 2; /* Siempre por encima del fondo */
     display: flex;
     flex-direction: column;
     align-items: center;
