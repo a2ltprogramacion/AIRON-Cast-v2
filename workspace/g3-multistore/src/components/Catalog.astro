@@ -392,57 +392,72 @@ function getCategoryIcon(cat: string) {
     align-items: center;
     background: #FFFFFF;
     border: 1px solid var(--border);
-    border-radius: 14px;
+    border-radius: 16px;
     padding: 16px 24px;
     gap: 16px;
     flex-wrap: wrap;
-    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+    margin-top: 10px;
   }
   .pagination-info {
-    font-size: 0.9rem;
+    font-size: 0.92rem;
     color: var(--text-muted);
     font-weight: 500;
   }
   .pagination-info strong {
     color: var(--text);
+    font-weight: 700;
   }
   .pagination-controls {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
   }
   .page-btn {
-    min-width: 40px;
-    height: 40px;
-    padding: 0 12px;
-    border-radius: 10px;
-    border: 1px solid transparent;
-    background: var(--surface-alt);
-    color: var(--text);
-    font-weight: 600;
-    font-size: 0.9rem;
+    min-width: 42px;
+    height: 42px;
+    padding: 0 14px;
+    border-radius: 12px;
+    border: 1.5px solid transparent;
+    background: #F1F5F9;
+    color: #1E293B;
+    font-weight: 700;
+    font-size: 0.95rem;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+    user-select: none;
   }
   .page-btn:hover:not(:disabled) {
-    background: #E2E8F0;
-    color: var(--primary);
-    transform: translateY(-1px);
+    background: rgba(37, 99, 235, 0.1);
+    color: #2563EB;
+    border-color: rgba(37, 99, 235, 0.25);
+    transform: translateY(-2px);
   }
   .page-btn.active {
-    background: var(--primary);
-    color: #FFFFFF;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-    font-weight: 700;
+    background: #2563EB !important;
+    color: #FFFFFF !important;
+    border-color: #2563EB !important;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+    transform: translateY(-1px);
   }
   .page-btn:disabled {
-    opacity: 0.35;
+    opacity: 0.3;
     cursor: not-allowed;
-    background: var(--surface-alt);
-    border: 1px solid var(--border);
+    background: #F8FAFC;
+    border-color: var(--border);
+    color: var(--text-muted);
+  }
+  .page-ellipsis {
+    color: var(--text-muted);
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding: 0 6px;
+    user-select: none;
   }
 </style>
 
@@ -546,7 +561,7 @@ function getCategoryIcon(cat: string) {
 
     if (startPage > 1) {
       html += `<button class="page-btn" onclick="goToPage(1)">1</button>`;
-      if (startPage > 2) html += `<span style="color:var(--text-muted); padding:0 4px;">...</span>`;
+      if (startPage > 2) html += `<span class="page-ellipsis">…</span>`;
     }
 
     for (let p = startPage; p <= endPage; p++) {
@@ -554,7 +569,7 @@ function getCategoryIcon(cat: string) {
     }
 
     if (endPage < totalPages) {
-      if (endPage < totalPages - 1) html += `<span style="color:var(--text-muted); padding:0 4px;">...</span>`;
+      if (endPage < totalPages - 1) html += `<span class="page-ellipsis">…</span>`;
       html += `<button class="page-btn" onclick="goToPage(${totalPages})">${totalPages}</button>`;
     }
 
