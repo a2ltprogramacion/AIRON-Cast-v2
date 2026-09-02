@@ -6,21 +6,11 @@
       <img src="/images/logo.webp" alt="G3 Multistore" class="brand-logo-img" />
     </a>
 
-    <!-- SWITCHER DE MONEDA -->
-    <div class="currency-box">
-      <span class="currency-label"><i class="bi bi-coin"></i> Ver Precios:</span>
-      <div class="currency-toggle">
-        <button id="btn-curr-usd" class="curr-btn active" onclick="setCurrency('usd')">
-          <i class="bi bi-cash-stack"></i> Divisas ($)
-        </button>
-        <button id="btn-curr-bcv" class="curr-btn" onclick="setCurrency('bcv')">
-          <i class="bi bi-bank"></i> Tasa BCV
-        </button>
-      </div>
-    </div>
-
     <div class="nav-actions">
-      <a href="https://wa.me/584121869211?text=Hola%20G3%20Multistore%20👋%2C%20quisiera%20solicitar%20asesor%C3%ADa%20y%20precios." target="_blank" class="btn btn-whatsapp">
+      <a href="https://www.facebook.com/marketplace/profile/1319015110/" target="_blank" class="nav-social-link" title="Facebook Marketplace">
+        <i class="bi bi-shop-window"></i> <span>Marketplace</span>
+      </a>
+      <a href="https://wa.me/584121869211?text=Hola%20G3%20Multistore%20👋%2C%20quisiera%20solicitar%20asesor%C3%ADa%20y%20cotizaci%C3%B3n." target="_blank" class="btn btn-whatsapp">
         <i class="bi bi-whatsapp"></i> <span>WhatsApp</span>
       </a>
     </div>
@@ -62,60 +52,26 @@
     transform: scale(1.04);
   }
 
-  .currency-box {
+  .nav-actions {
     display: flex;
     align-items: center;
-    gap: 8px;
-    background: var(--surface-alt);
-    padding: 4px 6px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
+    gap: 12px;
   }
-  .currency-label {
-    font-size: 0.78rem;
+  .nav-social-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    background: #EFF6FF;
+    color: #1D4ED8;
+    text-decoration: none;
     font-weight: 600;
-    color: var(--text-muted);
-    padding-left: 6px;
-  }
-  .currency-toggle {
-    display: flex;
-    gap: 4px;
-  }
-  .curr-btn {
-    padding: 6px 12px;
-    border-radius: 6px;
-    border: none;
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    background: transparent;
-    color: var(--text-muted);
+    font-size: 0.88rem;
     transition: all 0.2s ease;
   }
-  .curr-btn.active {
-    background: var(--surface);
-    color: var(--primary);
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-  }
-
-  @media (max-width: 768px) {
-    .currency-label { display: none; }
+  .nav-social-link:hover {
+    background: #DBEAFE;
+    transform: translateY(-1px);
   }
 </style>
-
-<script is:inline>
-  let currentCurrency = 'usd';
-
-  function setCurrency(curr) {
-    currentCurrency = curr;
-    document.getElementById('btn-curr-usd')?.classList.toggle('active', curr === 'usd');
-    document.getElementById('btn-curr-bcv')?.classList.toggle('active', curr === 'bcv');
-
-    document.querySelectorAll('.price-usd-display').forEach(el => {
-      el.style.display = curr === 'usd' ? 'block' : 'none';
-    });
-    document.querySelectorAll('.price-bcv-display').forEach(el => {
-      el.style.display = curr === 'bcv' ? 'block' : 'none';
-    });
-  }
-</script>

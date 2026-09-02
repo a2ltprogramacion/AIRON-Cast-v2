@@ -73,7 +73,7 @@ function getCategoryIcon(cat: string) {
     <div class="products-grid" id="products-grid">
       {products.map(p => {
         const whatsappMsg = encodeURIComponent(
-          `Hola G3 Multistore 👋, me interesa consultar el producto: *${p.title}* (SKU: ${p.sku}) por un monto de $${p.price_usd} (Divisas) / $${p.price_bcv} (BCV).`
+          `Hola G3 Multistore 👋, me interesa consultar precio y disponibilidad del producto: *${p.title}* (SKU: ${p.sku}, Categoría: ${p.category}).`
         );
         return (
           <div 
@@ -86,7 +86,7 @@ function getCategoryIcon(cat: string) {
             <div class="product-top">
               <span class="sku-badge">{p.sku}</span>
               {p.in_stock ? (
-                <span class="stock-badge in-stock"><i class="bi bi-check-circle-fill"></i> Disponible</span>
+                <span class="stock-badge in-stock"><i class="bi bi-check-circle-fill"></i> En Stock</span>
               ) : (
                 <span class="stock-badge out-stock"><i class="bi bi-exclamation-triangle-fill"></i> AGOTADO</span>
               )}
@@ -99,25 +99,13 @@ function getCategoryIcon(cat: string) {
             </div>
 
             <div class="product-footer">
-              <div class="prices-container">
-                <div class="price-usd-display">
-                  <span class="price-val">${p.price_usd}</span>
-                  <span class="price-lbl">Divisas ($)</span>
-                </div>
-                <div class="price-bcv-display" style="display: none;">
-                  <span class="price-val" style="color: var(--bcv);">${p.price_bcv}</span>
-                  <span class="price-lbl">Tasa BCV</span>
-                </div>
-              </div>
-
               <a 
                 href={`https://wa.me/584121869211?text=${whatsappMsg}`} 
                 target="_blank" 
-                class={`btn ${p.in_stock ? 'btn-whatsapp' : 'btn-outline'}`}
-                style="padding: 8px 14px; font-size: 0.85rem;"
+                class={`btn ${p.in_stock ? 'btn-whatsapp' : 'btn-outline'} product-cta-btn`}
               >
                 {p.in_stock ? (
-                  <><i class="bi bi-whatsapp"></i> Cotizar</>
+                  <><i class="bi bi-whatsapp"></i> Consultar Precio</>
                 ) : (
                   <><i class="bi bi-clock-history"></i> Consultar Llegada</>
                 )}
@@ -362,27 +350,20 @@ function getCategoryIcon(cat: string) {
   }
 
   .product-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     border-top: 1px solid var(--border);
-    padding-top: 12px;
-    gap: 10px;
+    padding-top: 14px;
+    margin-top: auto;
   }
-  .prices-container {
+  .product-cta-btn {
+    width: 100%;
     display: flex;
-    flex-direction: column;
-  }
-  .price-val {
-    font-size: 1.35rem;
-    font-weight: 800;
-    color: var(--text);
-    font-family: 'Plus Jakarta Sans', sans-serif;
-  }
-  .price-lbl {
-    font-size: 0.7rem;
-    color: var(--text-muted);
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    font-size: 0.9rem;
     font-weight: 600;
+    border-radius: 8px;
   }
 
   /* BARRA DE PAGINACIÓN MODERNA Y ELEGANTE */
